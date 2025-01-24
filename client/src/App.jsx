@@ -2,9 +2,11 @@ import "./App.css";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+
 import { BrowserRouter, Route, Routes } from "react-router";
 import SellerDashboard from "./pages/SellerDashboard";
 import FarmerDashboard from "./pages/FarmerDashboard";
+
 
 function App() {
   return (
