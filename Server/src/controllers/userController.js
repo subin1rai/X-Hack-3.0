@@ -145,15 +145,8 @@ export const getAllUsers = async (req, res) => {
   try {
     const users = await User.find({}).select("-password");
 
-    const verifiedFarmers = users.filter(
-      (u) => u.role === "farmer" && u.isVerified
-    );
-    const unverifiedFarmers = users.filter(
-      (u) => u.role === "farmer" && !u.isVerified
-    );
-    const verifiedSellers = users.filter(
-      (u) => u.role === "seller" && u.isVerified
-    );
+    const verifiedUsers = users.filter((u) => u.isVerified);
+    const unverifiedUsers = users.filter((u) => !u.isVerified);
 
     res.status(200).json({
       StatusCode: 200,
@@ -161,9 +154,8 @@ export const getAllUsers = async (req, res) => {
       ErrorMessage: [],
       Result: {
         allUsers: users,
-        verifiedFarmers,
-        unverifiedFarmers,
-        verifiedSellers,
+        verifiedUsers,
+        unverifiedUsers,
       },
     });
   } catch (error) {

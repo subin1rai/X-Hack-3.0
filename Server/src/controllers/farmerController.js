@@ -113,16 +113,6 @@ export const loginFarmer = async (req, res) => {
       });
     }
 
-    // Ensure that the password field in the database is not null or undefined
-    if (!farmer.password) {
-      return res.status(401).json({
-        StatusCode: 401,
-        IsSuccess: false,
-        ErrorMessage: "Authentication failed. No password set for this user.",
-        Result: null,
-      });
-    }
-
     const isPasswordValid = await bcrypt.compare(password, farmer.password);
     if (!isPasswordValid) {
       return res.status(401).json({
@@ -163,6 +153,80 @@ export const loginFarmer = async (req, res) => {
       StatusCode: 500,
       IsSuccess: false,
       ErrorMessage: "Internal server error during login",
+      Result: null,
+    });
+  }
+};
+
+export const getAllFarmers = async (req, res) => {
+  try {
+    const farmers = await Farmer.find({}).select("-password");
+
+    const verifiedFarmers = farmers.filter((f) => f.isVerified);
+    const unverifiedFarmers = farmers.filter((f) => !f.isVerified);
+
+    res.status(200).json({
+      StatusCode: 200,
+      IsSuccess: true,
+      ErrorMessage: [],
+      Result: {
+        allFarmers: farmers,
+        verifiedFarmers,
+        unverifiedFarmers,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      StatusCode: 500,
+      IsSuccess: false,
+      ErrorMessage: [{ message: "Error fetching farmers" }],
+      Result: null,
+    });
+  }
+};
+
+export const updateFarmerStatus = async (req, res) => {
+  const { farmerId } = req.params;
+  const { status } = req.body;
+
+  try {
+    const farmer = await Farmer.findById(farmerId);
+    if (!farmer) {
+      return res.status(404).json({
+        StatusCode: 404,
+        IsSuccess: false,
+        ErrorMessage: [{ message: "Farmer not found" }],
+        Result: null,
+      });
+    }
+
+    farmer.status = status;
+    if (status === "approved") {
+      farmer.isVerified = true;
+    }
+    await farmer.save();
+
+    res.status(200).json({
+      StatusCode: 200,
+      IsSuccess: true,
+      ErrorMessage: [],
+      Result: {
+        message: "Status updated successfully",
+        farmer: {
+          id: farmer._id,
+          fullName: farmer.fullName,
+          email: farmer.email,
+          status: farmer.status,
+          farmName: farmer.farmName,
+        },
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      StatusCode: 500,
+      IsSuccess: false,
+      ErrorMessage: [{ message: "Error updating farmer status" }],
       Result: null,
     });
   }
