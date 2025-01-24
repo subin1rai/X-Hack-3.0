@@ -4,9 +4,18 @@ import cookieParser from "cookie-parser";
 
 import userRouter from "./routes/userRoutes.js";
 
+const corsOptions = {
+  origin: "http://localhost:5173",
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
 const app = express();
 
-app.use(cors());
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
+
 app.use(cookieParser());
 app.use(express.json());
 
