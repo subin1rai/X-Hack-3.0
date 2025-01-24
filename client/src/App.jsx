@@ -2,7 +2,7 @@ import "./App.css";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import { BrowserRouter } from "react-router";
+import { BrowserRouter,Route, Routes } from "react-router";
 
 function App() {
   return (
