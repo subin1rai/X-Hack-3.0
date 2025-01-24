@@ -75,3 +75,51 @@ export const registerUser = async (req, res) => {
     });
   }
 };
+
+export const loginUser = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({
+        StatusCode: 401,
+        IsSuccess: false,
+        ErrorMessage: [{ message: "Invalid email or password" }],
+        Result: null,
+      });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        StatusCode: 401,
+        IsSuccess: false,
+        ErrorMessage: [{ message: "Invalid email or password" }],
+        Result: null,
+      });
+    }
+
+    res.status(200).json({
+      StatusCode: 200,
+      IsSuccess: true,
+      ErrorMessage: [],
+      Result: {
+        message: "Login successful",
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          kycImage: user.kycImage,
+        },
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      StatusCode: 500,
+      IsSuccess: false,
+      ErrorMessage: [{ message: "Internal server error during login" }],
+      Result: null,
+    });
+  }
+};

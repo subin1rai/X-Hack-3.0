@@ -11,7 +11,7 @@ app.use(cookieParser());
 app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.json({ message: "Let's hack the hackathon" });
+  res.json({ message: "Let's hack the hackathon..." });
 });
 
 app.use("/api", userRouter);
