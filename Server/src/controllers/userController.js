@@ -1,4 +1,4 @@
-import User from "../models/UserModel.js";
+import User from "../models/SellerModel.js";
 import bcrypt from "bcrypt";
 import cloudinary from "../config/coludinary.js";
 import config from "../config/config.js";
@@ -177,25 +177,12 @@ export const getAllUsers = async (req, res) => {
 };
 
 export const updateUserStatus = async (req, res) => {
-  const { userId, status, isVerified } = req.body;
+  const { userId } = req.params;
+  const { status } = req.body;
 
   try {
-    if (req.user.role !== "admin") {
-      return res.status(403).json({
-        StatusCode: 403,
-        IsSuccess: false,
-        ErrorMessage: [{ message: "Admin access required" }],
-        Result: null,
-      });
-    }
-
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { status, isVerified },
-      { new: true }
-    ).select("-password");
-
-    if (!updatedUser) {
+    const user = await User.findById(userId);
+    if (!user) {
       return res.status(404).json({
         StatusCode: 404,
         IsSuccess: false,
@@ -204,20 +191,32 @@ export const updateUserStatus = async (req, res) => {
       });
     }
 
+    user.status = status;
+    if (status === "approved") {
+      user.isVerified = true;
+    }
+    await user.save();
+
     res.status(200).json({
       StatusCode: 200,
       IsSuccess: true,
       ErrorMessage: [],
       Result: {
-        message: "User updated successfully",
-        user: updatedUser,
+        message: "Status updated successfully",
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          status: user.status,
+        },
       },
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({
       StatusCode: 500,
       IsSuccess: false,
-      ErrorMessage: [{ message: "Error updating user" }],
+      ErrorMessage: [{ message: "Error updating status" }],
       Result: null,
     });
   }

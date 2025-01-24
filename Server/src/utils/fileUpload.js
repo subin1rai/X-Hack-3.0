@@ -1,20 +1,21 @@
 import path from "path";
-import { promises as fs } from "fs";
-import { uploader } from "../config/coludinary.js";
+import cloudinary from "../config/cloudinary.js";
 
-const uploadToCloudinary = async (filePath, folder, filename, format) => {
+const uploadToCloudinary = async (
+  filePath,
+  folder,
+  publicId,
+  format
+) => {
   try {
-    const resourceType = format === "pdf" ? "raw" : "image";
-    const result = await uploader.upload(filePath, {
-      folder,
-      public_id: filename,
-      resource_type: resourceType,
+    const result = await cloudinary.uploader.upload(filePath, {
+      folder: folder,
+      public_id: publicId,
+      format: format,
     });
-    await fs.unlink(filePath);
     return result.secure_url;
   } catch (error) {
-    await fs.unlink(filePath);
-    throw error;
+    throw new Error(`Error uploading to Cloudinary: ${error.message}`);
   }
 };
 
