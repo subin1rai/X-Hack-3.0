@@ -1,6 +1,8 @@
 import User from "../models/UserModel.js";
 import bcrypt from "bcrypt";
 import cloudinary from "../config/coludinary.js";
+import config from "../config/config.js";
+import jwt from "jsonwebtoken";
 
 export const registerUser = async (req, res) => {
   const { name, email, password, kycImage } = req.body;
@@ -34,6 +36,7 @@ export const registerUser = async (req, res) => {
       password: hashedPassword,
       kycImage: uploadedImageUrl,
       isVerified: false,
+      status: "pending",
     });
 
     await newUser.save();
@@ -50,6 +53,7 @@ export const registerUser = async (req, res) => {
           email: newUser.email,
           kycImage: newUser.kycImage,
           isVerified: newUser.isVerified,
+          status: newUser.status,
         },
       },
     });
@@ -102,12 +106,19 @@ export const loginUser = async (req, res) => {
       });
     }
 
+    const token = jwt.sign(
+      { userId: user._id, role: user.role },
+      config.jwtSecret,
+      { expiresIn: "24h" }
+    );
+
     res.status(200).json({
       StatusCode: 200,
       IsSuccess: true,
       ErrorMessage: [],
       Result: {
         message: "Login successful",
+        token,
         user: {
           id: user._id,
           name: user.name,
@@ -115,14 +126,98 @@ export const loginUser = async (req, res) => {
           role: user.role,
           kycImage: user.kycImage,
           isVerified: user.isVerified,
+          status: user.status,
         },
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      StatusCode: 500,
+      IsSuccess: false,
+      ErrorMessage: [{ message: "Internal server error during login" }],
+      Result: null,
+    });
+  }
+};
+
+export const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find({}).select("-password");
+
+    const verifiedFarmers = users.filter(
+      (u) => u.role === "farmer" && u.isVerified
+    );
+    const unverifiedFarmers = users.filter(
+      (u) => u.role === "farmer" && !u.isVerified
+    );
+    const verifiedSellers = users.filter(
+      (u) => u.role === "seller" && u.isVerified
+    );
+
+    res.status(200).json({
+      StatusCode: 200,
+      IsSuccess: true,
+      ErrorMessage: [],
+      Result: {
+        allUsers: users,
+        verifiedFarmers,
+        unverifiedFarmers,
+        verifiedSellers,
       },
     });
   } catch (error) {
     res.status(500).json({
       StatusCode: 500,
       IsSuccess: false,
-      ErrorMessage: [{ message: "Internal server error during login" }],
+      ErrorMessage: [{ message: "Error fetching users" }],
+      Result: null,
+    });
+  }
+};
+
+export const updateUserStatus = async (req, res) => {
+  const { userId, status, isVerified } = req.body;
+
+  try {
+    if (req.user.role !== "admin") {
+      return res.status(403).json({
+        StatusCode: 403,
+        IsSuccess: false,
+        ErrorMessage: [{ message: "Admin access required" }],
+        Result: null,
+      });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { status, isVerified },
+      { new: true }
+    ).select("-password");
+
+    if (!updatedUser) {
+      return res.status(404).json({
+        StatusCode: 404,
+        IsSuccess: false,
+        ErrorMessage: [{ message: "User not found" }],
+        Result: null,
+      });
+    }
+
+    res.status(200).json({
+      StatusCode: 200,
+      IsSuccess: true,
+      ErrorMessage: [],
+      Result: {
+        message: "User updated successfully",
+        user: updatedUser,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      StatusCode: 500,
+      IsSuccess: false,
+      ErrorMessage: [{ message: "Error updating user" }],
       Result: null,
     });
   }

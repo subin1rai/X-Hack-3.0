@@ -33,6 +33,11 @@ const userSchema = new Schema(
       type: String,
       required: [true, "KYC Image is required"],
     },
+    status: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+    },
     isVerified: {
       type: Boolean,
       default: false,
