@@ -15,6 +15,10 @@ const farmerSchema = new mongoose.Schema(
         "Please provide a valid email address",
       ],
     },
+    password: {
+      type: String,
+      required: true,
+    },
     phone: {
       type: String,
       required: [true, "Phone number is required"],
@@ -45,6 +49,20 @@ const farmerSchema = new mongoose.Schema(
     licenseImage: {
       type: String,
       required: [true, "Agricultural license image is required"],
+    },
+    role: {
+      type: String,
+      enum: ["admin", "farmer", "seller"],
+      default: "farmer",
+    },
+    status: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
     },
   },
   {

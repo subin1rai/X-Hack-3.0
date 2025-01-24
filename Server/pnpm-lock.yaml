@@ -50,6 +50,9 @@ importers:
       socket.io:
         specifier: ^4.8.1
         version: 4.8.1
+      validator:
+        specifier: ^13.12.0
+        version: 13.12.0
 
 packages:
 
