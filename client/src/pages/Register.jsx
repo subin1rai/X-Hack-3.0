@@ -13,58 +13,60 @@ const Register = () => {
   });
 
   const baseUrl = import.meta.env.VITE_BASE_URL;
+  const [error, setError] = useState("");
 
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
   const handleChange = async (e) => {
+    setError("");
     setUser((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
     }));
   };
 
-  const handleImageChange = (e) => {
+  const handleImageUpload = (e) => {
     const file = e.target.files[0];
+    const reader = new FileReader();
+
+    reader.onloadend = () => {
+      const timestamp = Date.now();
+      const extension = file.name.split(".").pop();
+      const newFilename = `image_${timestamp}.${extension}`;
+
+      setUser((prev) => ({
+        ...prev,
+        kycImage: newFilename,
+      }));
+    };
 
     if (file) {
-      const validTypes = ["image/jpeg", "image/png", "image/jpg"];
-      if (!validTypes.includes(file.type)) {
-        console.error("Invalid file type. Only JPEG and PNG are allowed.");
-        return;
-      }
-
-      // Convert file to Base64
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setUser((prev) => ({
-          ...prev,
-          kycImage: reader.result,
-        }));
-      };
       reader.readAsDataURL(file);
     }
   };
 
-  console.log(user.kycImage);
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
 
     try {
       const response = await axios.post(`${baseUrl}/api/register`, user);
-
-      console.log(response);
-
       navigate("/login");
-
-      setLoading(false);
     } catch (error) {
-      console.log(error);
+      if (error.response?.data?.ErrorMessage?.[0]?.message) {
+        setError(error.response.data.ErrorMessage[0].message);
+      } else {
+        setError("Registration failed. Please try again.");
+      }
+    } finally {
       setLoading(false);
     }
   };
+
+  console.log(error);
 
   return (
     <div className="flex justify-around w-screen h-screen items-center  ">
@@ -84,6 +86,12 @@ const Register = () => {
           onSubmit={handleSubmit}
           className="w-full flex flex-col items-center gap-6"
         >
+          {error && (
+            <p className="bg-red-400 text-white rounded-md p-4 w-[400px] ">
+              {error}
+            </p>
+          )}
+
           <div className="flex flex-col gap-2">
             <label htmlFor="name">Full Name</label>
             <input
@@ -111,7 +119,7 @@ const Register = () => {
             <input
               type="file"
               name="kycImage"
-              onChange={handleImageChange}
+              onChange={handleImageUpload}
               placeholder="Enter your fullname"
               className="border border-gray-400 px-4 py-3 w-[400px] rounded-xl"
             />

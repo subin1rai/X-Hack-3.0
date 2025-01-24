@@ -2,16 +2,15 @@ import React from "react";
 import Sidebar from "../components/SIdeBar";
 import Topbar from "../components/Topbar";
 
-const SellerDashboard = () => {
+const AdminDashboard = () => {
   return (
-    <div className="flex gap-1 bg-gray-50">
+    <div className="bg-gray-50 w-screen h-screen flex gap-1">
       <Sidebar />
-
-      <div className="flex flex-col">
+      <div>
         <Topbar />
       </div>
     </div>
   );
 };
 
-export default SellerDashboard;
+export default AdminDashboard;
