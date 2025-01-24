@@ -5,6 +5,7 @@ import Register from "./pages/Register";
 import { BrowserRouter, Route, Routes } from "react-router";
 import SellerDashboard from "./pages/SellerDashboard";
 import FarmerDashboard from "./pages/FarmerDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
 
 function App() {
   return (
@@ -13,8 +14,9 @@ function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/login" element={<SellerDashboard />} />
-        <Route path="/login" element={<FarmerDashboard />} />
+        <Route path="/sellerDashboard" element={<SellerDashboard />} />
+        <Route path="/farmerDashboard" element={<FarmerDashboard />} />
+        <Route path="/adminDashboard" element={<AdminDashboard />} />
       </Routes>
     </BrowserRouter>
   );
