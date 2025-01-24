@@ -10,8 +10,7 @@ const Login = () => {
   });
 
   const baseUrl = import.meta.env.VITE_BASE_URL;
-
-  console.log(baseUrl);
+  const [error, setError] = useState("");
 
   const [loading, setLoading] = useState(false);
 
@@ -27,19 +26,28 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
 
     try {
       const response = await axios.post(`${baseUrl}/api/login`, user);
+      localStorage.setItem("user", JSON.stringify(response.data.Result.user));
+      localStorage.setItem("token", response.data.Result.token);
 
       console.log(response);
-      if (response.data.Result.user.role == "seller") {
+      if (response.data.Result.user.role === "seller") {
         navigate("/sellerDashboard");
-      } else if (response.data.Result.user.role == "farmer") {
+      } else if (response.data.Result.user.role === "farmer") {
         navigate("/farmerDashboard");
+      } else if (response.data.Result.user.role === "admin") {
+        navigate("/adminDashboard");
       }
-      setLoading(false);
     } catch (error) {
-      console.log(error);
+      if (error.response?.data?.ErrorMessage?.[0]?.message) {
+        setError(error.response.data.ErrorMessage[0].message);
+      } else {
+        setError("Login failed. Please check your credentials.");
+      }
+    } finally {
       setLoading(false);
     }
   };
@@ -63,6 +71,11 @@ const Login = () => {
           onSubmit={handleSubmit}
           className="w-full flex flex-col items-center gap-6"
         >
+          {error && (
+            <p className="bg-red-400 text-white rounded-md p-4 w-[400px]">
+              {error}
+            </p>
+          )}
           <div className="flex flex-col gap-2">
             <label htmlFor="name" className="">
               Email
