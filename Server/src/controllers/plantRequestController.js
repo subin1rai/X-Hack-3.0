@@ -26,17 +26,6 @@ export const createPlantRequest = async (req, res) => {
       });
     }
 
-    if (plant.quantity < quantity) {
-      return res.status(400).json({
-        StatusCode: 400,
-        IsSuccess: false,
-        ErrorMessage: [
-          { message: "Requested quantity exceeds available stock" },
-        ],
-        Result: null,
-      });
-    }
-
     const request = new PlantRequest({
       sellerId: req.user.sellerId,
       plantId,
@@ -49,13 +38,18 @@ export const createPlantRequest = async (req, res) => {
 
     await request.save();
 
+    const populatedRequest = await PlantRequest.findById(request._id).populate(
+      "plantId",
+      "name"
+    );
+
     res.status(201).json({
       StatusCode: 201,
       IsSuccess: true,
       ErrorMessage: [],
       Result: {
         message: "Request created successfully",
-        request,
+        request: populatedRequest,
       },
     });
   } catch (error) {

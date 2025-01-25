@@ -6,6 +6,7 @@ import userRouter from "./routes/sellerRoutes.js";
 import farmerRouter from "./routes/farmerRouter.js";
 import plantRouter from "./routes/plantRouter.js";
 import plantRequestRouter from "./routes/plantRequestRouter.js";
+import blogRouter from "./routes/blogRouter.js";
 
 const corsOptions = {
   origin: "http://localhost:5173",
@@ -35,6 +36,7 @@ app.use("/api", userRouter);
 app.use("/api/farmers", farmerRouter);
 app.use("/api/plants", plantRouter);
 app.use("/api/plantsrequest", plantRequestRouter);
+app.use("/api/blogs", blogRouter);
 
 app.use((req, res, next) => {
   const error = new Error("Not Found");
