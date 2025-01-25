@@ -124,7 +124,12 @@ export const loginFarmer = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { farmerId: farmer._id, role: farmer.role },
+      {
+        farmerId: farmer._id,
+        email: farmer.email,
+        type: "farmer",
+        role: "farmer",
+      },
       config.jwtSecret,
       { expiresIn: "24h" }
     );

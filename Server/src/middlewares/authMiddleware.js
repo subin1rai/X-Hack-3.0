@@ -15,7 +15,11 @@ export const authMiddleware = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, config.jwtSecret);
-    req.user = decoded;
+    req.user = {
+      id: decoded.farmerId,
+      type: decoded.type,
+      role: decoded.role,
+    };
     next();
   } catch (error) {
     res.status(401).json({

@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 
 import userRouter from "./routes/userRoutes.js";
 import farmerRouter from "./routes/farmerRouter.js";
+import plantRouter from "./routes/plantRouter.js";
 
 const corsOptions = {
   origin: "http://localhost:5173",
@@ -26,6 +27,7 @@ app.get("/", (req, res) => {
 
 app.use("/api", userRouter);
 app.use("/api/farmers", farmerRouter);
+app.use("/api/plants", plantRouter);
 
 app.use((req, res, next) => {
   const error = new Error("Not Found");
