@@ -13,8 +13,11 @@ import recommendations from "../assets/recommendation.png";
 import chat from "../assets/chat.png";
 import add from "../assets/add.png";
 import comment from "../assets/comment.png";
+import detect from "../assets/detect.png";
+import addImage from "../assets/addImage.svg";
 
 export default {
+  addImage,
   register,
   plantd,
   shopplant,
@@ -29,6 +32,6 @@ export default {
   recommendations,
   chat,
   add,
-  comment
+  comment,
+  detect,
 };
-
