@@ -12,6 +12,7 @@ import explore from "../assets/explore.png";
 import recommendations from "../assets/recommendation.png";
 import chat from "../assets/chat.png";
 import add from "../assets/add.png";
+import comment from "../assets/comment.png";
 
 export default {
   register,
@@ -27,6 +28,7 @@ export default {
   explore,
   recommendations,
   chat,
-  add
+  add,
+  comment
 };
 
