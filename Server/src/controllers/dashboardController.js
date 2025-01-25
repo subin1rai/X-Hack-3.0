@@ -7,49 +7,73 @@ export const getFarmerDashboard = async (req, res) => {
   try {
     const farmerId = req.user.sub;
 
-    if (!farmerId) {
-      return res.status(401).json({
-        StatusCode: 401,
-        IsSuccess: false,
-        ErrorMessage: [{ message: "Authentication required" }],
-      });
-    }
-
-    const [totalBlogs, totalPlants, plantRequests, commentStats, plantStats] =
-      await Promise.all([
-        Blog.countDocuments({ author: farmerId }),
-        Plant.countDocuments({ farmerId }),
-        PlantRequest.countDocuments({
-          plantId: { $in: await Plant.find({ farmerId }).distinct("_id") },
-        }),
-        Blog.aggregate([
-          { $match: { author: new mongoose.Types.ObjectId(farmerId) } },
-          { $unwind: "$comments" },
-          { $group: { _id: null, total: { $sum: 1 } } },
-        ]),
-        Plant.aggregate([
-          { $match: { farmerId: new mongoose.Types.ObjectId(farmerId) } },
-          {
-            $group: {
-              _id: null,
-              totalRevenue: { $sum: "$price" },
-              averagePrice: { $avg: "$price" },
-            },
+    const [plantOverview, earnings, recentActivity] = await Promise.all([
+      Plant.aggregate([
+        { $match: { farmerId: new mongoose.Types.ObjectId(farmerId) } },
+        {
+          $group: {
+            _id: null,
+            totalPlants: { $sum: 1 },
+            totalStock: { $sum: "$quantity" },
+            totalValue: { $sum: { $multiply: ["$price", "$quantity"] } },
+            avgPrice: { $avg: "$price" },
           },
-        ]),
-      ]);
+        },
+      ]),
+
+      PlantRequest.aggregate([
+        {
+          $match: {
+            plantId: { $in: await Plant.find({ farmerId }).distinct("_id") },
+            status: "completed",
+          },
+        },
+        {
+          $group: {
+            _id: {
+              $dateToString: { format: "%Y-%m", date: "$createdAt" },
+            },
+            revenue: { $sum: "$requestedPrice" },
+            orders: { $sum: 1 },
+          },
+        },
+        { $sort: { _id: -1 } },
+      ]),
+
+      Promise.all([
+        Blog.find({ author: farmerId }).sort("-createdAt").limit(3),
+        PlantRequest.find({
+          plantId: { $in: await Plant.find({ farmerId }).distinct("_id") },
+        })
+          .sort("-createdAt")
+          .limit(5)
+          .populate("sellerId", "name"),
+      ]),
+    ]);
 
     return res.status(200).json({
       StatusCode: 200,
       IsSuccess: true,
       Result: {
-        summary: {
-          totalBlogs,
-          totalPlants,
-          totalRequests: plantRequests,
-          totalComments: commentStats[0]?.total || 0,
-          totalRevenue: plantStats[0]?.totalRevenue || 0,
-          averagePlantPrice: plantStats[0]?.averagePrice || 0,
+        overview: {
+          totalPlants: plantOverview[0]?.totalPlants || 0,
+          totalStock: plantOverview[0]?.totalStock || 0,
+          totalValue: plantOverview[0]?.totalValue || 0,
+          avgPrice: plantOverview[0]?.avgPrice || 0,
+        },
+        earnings: {
+          monthly: earnings,
+          total: earnings.reduce((sum, month) => sum + month.revenue, 0),
+        },
+        recentActivity: {
+          blogs: recentActivity[0],
+          orders: recentActivity[1].map((order) => ({
+            id: order._id,
+            buyer: order.sellerId.name,
+            amount: order.requestedPrice,
+            status: order.status,
+            date: order.createdAt,
+          })),
         },
       },
     });
@@ -67,17 +91,35 @@ export const getSellerDashboard = async (req, res) => {
   try {
     const sellerId = req.user.sub;
 
-    const dashboardData = await Promise.all([
-      PlantRequest.countDocuments({ sellerId }),
+    const [orderStats, spending, inventory] = await Promise.all([
+      // Order stats
       PlantRequest.aggregate([
         { $match: { sellerId: new mongoose.Types.ObjectId(sellerId) } },
         {
           $group: {
             _id: "$status",
             count: { $sum: 1 },
+            total: { $sum: "$requestedPrice" },
           },
         },
       ]),
+
+      // Monthly spending
+      PlantRequest.aggregate([
+        { $match: { sellerId: new mongoose.Types.ObjectId(sellerId) } },
+        {
+          $group: {
+            _id: {
+              $dateToString: { format: "%Y-%m", date: "$createdAt" },
+            },
+            spent: { $sum: "$requestedPrice" },
+            orders: { $sum: 1 },
+          },
+        },
+        { $sort: { _id: -1 } },
+      ]),
+
+      // Current inventory
       PlantRequest.aggregate([
         {
           $match: {
@@ -86,32 +128,47 @@ export const getSellerDashboard = async (req, res) => {
           },
         },
         {
+          $lookup: {
+            from: "plants",
+            localField: "plantId",
+            foreignField: "_id",
+            as: "plant",
+          },
+        },
+        { $unwind: "$plant" },
+        {
           $group: {
-            _id: null,
-            totalSpent: { $sum: "$requestedPrice" },
-            averagePrice: { $avg: "$requestedPrice" },
+            _id: "$plant.name",
+            quantity: { $sum: "$quantity" },
+            spent: { $sum: "$requestedPrice" },
           },
         },
       ]),
     ]);
 
-    const [totalRequests, requestsByStatus, financialStats] = dashboardData;
-
-    const statusCounts = requestsByStatus.reduce((acc, curr) => {
-      acc[curr._id] = curr.count;
-      return acc;
-    }, {});
-
     return res.status(200).json({
       StatusCode: 200,
       IsSuccess: true,
       Result: {
-        summary: {
-          totalRequests,
-          requestsByStatus: statusCounts,
-          totalSpent: financialStats[0]?.totalSpent || 0,
-          averageRequestPrice: financialStats[0]?.averagePrice || 0,
+        orders: {
+          status: orderStats.reduce((acc, stat) => {
+            acc[stat._id] = {
+              count: stat.count,
+              total: stat.total,
+            };
+            return acc;
+          }, {}),
+          total: orderStats.reduce((sum, stat) => sum + stat.count, 0),
         },
+        spending: {
+          monthly: spending,
+          total: spending.reduce((sum, month) => sum + month.spent, 0),
+        },
+        inventory: inventory.map((item) => ({
+          name: item._id,
+          quantity: item.quantity,
+          value: item.spent,
+        })),
       },
     });
   } catch (error) {
