@@ -4,6 +4,15 @@ import cloudinary from "cloudinary";
 export const createBlog = async (req, res) => {
   const { title, content, tags, isPublished } = req.body;
 
+  if (!req.user?.sub) {
+    return res.status(401).json({
+      StatusCode: 401,
+      IsSuccess: false,
+      ErrorMessage: [{ message: "Authentication required" }],
+      Result: null,
+    });
+  }
+
   try {
     let imageUrls = [];
 
@@ -19,30 +28,34 @@ export const createBlog = async (req, res) => {
     const newBlog = new Blog({
       title,
       content,
-      author: req.user.id,
-      tags,
-      isPublished,
+      author: req.user.sub,
+      tags: tags || [],
+      isPublished: isPublished ?? false,
       images: imageUrls,
     });
 
     await newBlog.save();
 
-    res.status(201).json({
+    const populatedBlog = await Blog.findById(newBlog._id).populate(
+      "author",
+      "name email"
+    );
+
+    return res.status(201).json({
       StatusCode: 201,
       IsSuccess: true,
       ErrorMessage: null,
       Result: {
         message: "Blog created successfully",
-        blogId: newBlog._id,
-        images: newBlog.images,
+        blog: populatedBlog,
       },
     });
   } catch (error) {
     console.error("Error creating blog:", error);
-    res.status(500).json({
+    return res.status(500).json({
       StatusCode: 500,
       IsSuccess: false,
-      ErrorMessage: [{ message: "Internal server error during blog creation" }],
+      ErrorMessage: [{ message: error.message || "Error creating blog" }],
       Result: null,
     });
   }

@@ -7,7 +7,6 @@ export const createPlantRequest = async (req, res) => {
     const { quantity, requestedPrice, deliveryLocation, deliveryDate, notes } =
       req.body;
 
-
     if (!req.user.sub) {
       return res.status(400).json({
         StatusCode: 400,
@@ -93,6 +92,158 @@ export const sellerRequest = async (req, res) => {
   } catch (error) {
     console.error("Error fetching seller requests:", error);
     res.status(500).json({
+      StatusCode: 500,
+      IsSuccess: false,
+      ErrorMessage: [{ message: "Error fetching seller requests" }],
+      Result: null,
+    });
+  }
+};
+
+export const getFarmerSellerRequests = async (req, res) => {
+  try {
+    const {
+      location,
+      minPrice,
+      maxPrice,
+      deliveryDate,
+      status,
+      sortBy = "createdAt",
+      order = "desc",
+      page = 1,
+      limit = 10,
+    } = req.query;
+
+    const match = {};
+
+    if (location) {
+      match.deliveryLocation = new RegExp(location, "i");
+    }
+
+    if (minPrice || maxPrice) {
+      match.requestedPrice = {};
+      if (minPrice) match.requestedPrice.$gte = Number(minPrice);
+      if (maxPrice) match.requestedPrice.$lte = Number(maxPrice);
+    }
+
+    if (deliveryDate) {
+      const startDate = new Date(deliveryDate);
+      startDate.setHours(0, 0, 0, 0);
+      const endDate = new Date(deliveryDate);
+      endDate.setHours(23, 59, 59, 999);
+      match.deliveryDate = {
+        $gte: startDate,
+        $lte: endDate,
+      };
+    }
+
+    if (status) {
+      match.status = status;
+    }
+
+    const skip = (Number(page) - 1) * Number(limit);
+
+    const requests = await PlantRequest.aggregate([
+      {
+        $lookup: {
+          from: "sellers",
+          localField: "sellerId",
+          foreignField: "_id",
+          as: "sellerDetails",
+        },
+      },
+      {
+        $lookup: {
+          from: "plants",
+          localField: "plantId",
+          foreignField: "_id",
+          as: "plantDetails",
+        },
+      },
+      {
+        $unwind: "$sellerDetails",
+      },
+      {
+        $unwind: "$plantDetails",
+      },
+      {
+        $match: match,
+      },
+      {
+        $project: {
+          "sellerDetails.password": 0,
+          "sellerDetails.email": 0,
+          "sellerDetails.__v": 0,
+        },
+      },
+      {
+        $sort: { [sortBy]: order === "desc" ? -1 : 1 },
+      },
+      {
+        $facet: {
+          metadata: [
+            { $count: "total" },
+            {
+              $addFields: {
+                currentPage: Number(page),
+                totalPages: {
+                  $ceil: {
+                    $divide: ["$total", Number(limit)],
+                  },
+                },
+              },
+            },
+          ],
+          data: [{ $skip: skip }, { $limit: Number(limit) }],
+        },
+      },
+    ]);
+
+    const formattedResponse = {
+      metadata: requests[0].metadata[0] || {
+        total: 0,
+        currentPage: Number(page),
+        totalPages: 0,
+      },
+      requests: requests[0].data.map((request) => ({
+        requestId: request._id,
+        plantDetails: {
+          name: request.plantDetails.name,
+          quantity: request.plantDetails.quantity,
+          price: request.plantDetails.price,
+          location: request.plantDetails.location,
+        },
+        sellerDetails: {
+          name: request.sellerDetails.name,
+          phone: request.sellerDetails.phone,
+          address: request.sellerDetails.address,
+          rating: request.sellerDetails.rating,
+        },
+        requestDetails: {
+          quantity: request.quantity,
+          requestedPrice: request.requestedPrice,
+          deliveryLocation: request.deliveryLocation,
+          deliveryDate: request.deliveryDate,
+          status: request.status,
+          notes: request.notes,
+          createdAt: request.createdAt,
+        },
+      })),
+    };
+
+    return res.status(200).json({
+      StatusCode: 200,
+      IsSuccess: true,
+      ErrorMessage: [],
+      Result: {
+        message: "Seller requests fetched successfully",
+        pagination: formattedResponse.metadata,
+        requests: formattedResponse.requests,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching seller requests for farmer:", error);
+    return res.status(500).json({
       StatusCode: 500,
       IsSuccess: false,
       ErrorMessage: [{ message: "Error fetching seller requests" }],

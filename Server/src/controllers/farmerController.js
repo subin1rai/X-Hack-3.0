@@ -1,8 +1,6 @@
 import Farmer from "../models/FarmerModel.js";
 import bcrypt from "bcrypt";
 import cloudinary from "cloudinary";
-import jwt from "jsonwebtoken";
-import config from "../config/config.js";
 import { generateAccessToken } from "../middlewares/authMiddleware.js";
 
 export const registerFarmer = async (req, res) => {
@@ -87,69 +85,7 @@ export const registerFarmer = async (req, res) => {
   }
 };
 
-export const loginFarmer = async (req, res) => {
-  const { email, password } = req.body;
 
-  if (!email || !password) {
-    return res.status(400).json({
-      StatusCode: 400,
-      IsSuccess: false,
-      ErrorMessage: "Email and password are required.",
-      Result: null,
-    });
-  }
-
-  try {
-    const farmer = await Farmer.findOne({ email });
-    if (!farmer) {
-      return res.status(401).json({
-        StatusCode: 401,
-        IsSuccess: false,
-        ErrorMessage: "Invalid email or password",
-        Result: null,
-      });
-    }
-
-    const isPasswordValid = await bcrypt.compare(password, farmer.password);
-    if (!isPasswordValid) {
-      return res.status(401).json({
-        StatusCode: 401,
-        IsSuccess: false,
-        ErrorMessage: "Invalid email or password",
-        Result: null,
-      });
-    }
-
-      const token = generateAccessToken(farmer._id);
-
-    res.status(200).json({
-      StatusCode: 200,
-      IsSuccess: true,
-      ErrorMessage: [],
-      Result: {
-        message: "Login successful",
-        token,
-        farmer: {
-          id: farmer._id,
-          name: farmer.fullName,
-          email: farmer.email,
-          role: farmer.role,
-          farmName: farmer.farmName,
-          isVerified: farmer.isVerified,
-          status: farmer.status,
-        },
-      },
-    });
-  } catch (error) {
-    console.error("Error during farmer login:", error);
-    res.status(500).json({
-      StatusCode: 500,
-      IsSuccess: false,
-      ErrorMessage: "Internal server error during login",
-      Result: null,
-    });
-  }
-};
 
 export const getAllFarmers = async (req, res) => {
   try {

@@ -4,6 +4,7 @@ import cloudinary from "cloudinary";
 export const addPlant = async (req, res) => {
   try {
     const farmerId = req.user.sub;
+    console.log(farmerId);
     let {
       name,
       quantity,
@@ -159,7 +160,7 @@ export const deletePlant = async (req, res) => {
 
 export const getFarmerPlants = async (req, res) => {
   try {
-    const plants = await Plant.find({ id: req.user.sub });
+    const plants = await Plant.find({ farmerId: req.user.sub });
 
     res.json({
       StatusCode: 200,
@@ -215,7 +216,7 @@ export const getPlantDetails = async (req, res) => {
 
 export const getAllPlants = async (req, res) => {
   try {
-    const plants = await Plant.find({}); 
+    const plants = await Plant.find({});
 
     res.json({
       StatusCode: 200,

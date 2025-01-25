@@ -1,7 +1,12 @@
 import express from "express";
-import { authenticateToken, isSeller } from "../middlewares/authMiddleware.js";
+import {
+  authenticateToken,
+  isFarmer,
+  isSeller,
+} from "../middlewares/authMiddleware.js";
 import {
   createPlantRequest,
+  getFarmerSellerRequests,
   sellerRequest,
 } from "../controllers/plantRequestController.js";
 
@@ -18,6 +23,13 @@ plantRequestRouter.get(
   authenticateToken,
   isSeller,
   sellerRequest
+);
+
+plantRequestRouter.get(
+  "/farmer/seller-requests",
+  authenticateToken,
+  isFarmer,
+  getFarmerSellerRequests
 );
 
 export default plantRequestRouter;

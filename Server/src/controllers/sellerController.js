@@ -2,8 +2,6 @@ import Seller from "../models/SellerModel.js";
 import Farmer from "../models/FarmerModel.js";
 import bcrypt from "bcrypt";
 import cloudinary from "../config/coludinary.js";
-import config from "../config/config.js";
-import jwt from "jsonwebtoken";
 import { generateAccessToken } from "../middlewares/authMiddleware.js";
 
 export const registerSeller = async (req, res) => {
@@ -91,13 +89,21 @@ export const registerSeller = async (req, res) => {
 };
 
 export const login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
+  const { email, password } = req.body;
 
+  if (!email || !password) {
+    return res.status(400).json({
+      StatusCode: 400,
+      IsSuccess: false,
+      ErrorMessage: [{ message: "Email and password are required" }],
+      Result: null,
+    });
+  }
+
+  try {
     const seller = await Seller.findOne({ email });
     if (seller && (await bcrypt.compare(password, seller.password))) {
       const token = generateAccessToken(seller._id);
-
       return res.status(200).json({
         StatusCode: 200,
         IsSuccess: true,
@@ -110,6 +116,8 @@ export const login = async (req, res) => {
             name: seller.name,
             email: seller.email,
             businessName: seller.businessName,
+            isVerified: seller.isVerified,
+            status: seller.status,
           },
         },
       });
@@ -117,12 +125,7 @@ export const login = async (req, res) => {
 
     const farmer = await Farmer.findOne({ email });
     if (farmer && (await bcrypt.compare(password, farmer.password))) {
-      const token = jwt.sign(
-        { id: farmer._id, role: "farmer", farmerId: farmer._id },
-        config.jwtSecret,
-        { expiresIn: "24h" }
-      );
-
+      const token = generateAccessToken(farmer._id);
       return res.status(200).json({
         StatusCode: 200,
         IsSuccess: true,
@@ -132,8 +135,11 @@ export const login = async (req, res) => {
           user: {
             id: farmer._id,
             role: "farmer",
-            name: farmer.name,
+            name: farmer.fullName,
             email: farmer.email,
+            farmName: farmer.farmName,
+            isVerified: farmer.isVerified,
+            status: farmer.status,
           },
         },
       });
@@ -142,7 +148,7 @@ export const login = async (req, res) => {
     return res.status(401).json({
       StatusCode: 401,
       IsSuccess: false,
-      ErrorMessage: [{ message: "Invalid credentials" }],
+      ErrorMessage: [{ message: "Invalid email or password" }],
       Result: null,
     });
   } catch (error) {
@@ -150,7 +156,7 @@ export const login = async (req, res) => {
     return res.status(500).json({
       StatusCode: 500,
       IsSuccess: false,
-      ErrorMessage: [{ message: "Login failed" }],
+      ErrorMessage: [{ message: "Internal server error during login" }],
       Result: null,
     });
   }
