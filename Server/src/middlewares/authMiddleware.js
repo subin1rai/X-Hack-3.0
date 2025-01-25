@@ -51,7 +51,7 @@ const authenticateToken = (req, res, next) => {
 
 const isAdmin = async (req, res, next) => {
   try {
-    const user = await farmerModel.findById(req.user.sub);
+    const user = await sellerModel.findById(req.user.sub);
     if (!user || user.role !== "admin") {
       return res.status(403).json({
         StatusCode: 403,

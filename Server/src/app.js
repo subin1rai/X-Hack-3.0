@@ -33,13 +33,12 @@ app.get("/", (req, res) => {
   res.json({ message: "Let's hack the hackathon..." });
 });
 
-app.use("/api", userRouter);  
+app.use("/api", userRouter);
 app.use("/api/farmers", farmerRouter);
 app.use("/api/plants", plantRouter);
 app.use("/api/plantsrequest", plantRequestRouter);
 app.use("/api/blogs", blogRouter);
 app.use("/api/dashboard", dashboardRouter);
-
 
 app.use((req, res, next) => {
   const error = new Error("Not Found");

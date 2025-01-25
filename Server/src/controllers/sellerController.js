@@ -2,7 +2,12 @@ import Seller from "../models/SellerModel.js";
 import Farmer from "../models/FarmerModel.js";
 import bcrypt from "bcrypt";
 import cloudinary from "../config/coludinary.js";
-import { generateAccessToken } from "../middlewares/authMiddleware.js";
+import {
+  generateAccessToken,
+  isFarmer,
+} from "../middlewares/authMiddleware.js";
+
+import { sendStatusUpdateEmail } from "../utils/emailService.js";
 
 export const registerSeller = async (req, res) => {
   const { name, email, password, kycImage, businessName, phone, address } =
@@ -112,7 +117,7 @@ export const login = async (req, res) => {
           token,
           user: {
             id: seller._id,
-            role: "seller",
+            role: seller.role,
             name: seller.name,
             email: seller.email,
             businessName: seller.businessName,
@@ -188,21 +193,41 @@ export const getAllSellers = async (req, res) => {
   }
 };
 
-export const updateSellerStatus = async (req, res) => {
+export const updateUserStatus = async (req, res) => {
   try {
-    const seller = await Seller.findById(req.params.sub);
-    if (!seller) {
+    let user = await Farmer.findById(req.params.id);
+    let userType = "Farmer";
+
+    if (!user) {
+      user = await Seller.findById(req.params.id);
+      userType = "Seller";
+    }
+
+    if (!user) {
       return res.status(404).json({
         StatusCode: 404,
         IsSuccess: false,
-        ErrorMessage: [{ message: "Seller not found" }],
+        ErrorMessage: [{ message: `${userType} not found` }],
         Result: null,
       });
     }
 
-    seller.status = req.body.status;
-    if (req.body.status === "approved") seller.isVerified = true;
-    await seller.save();
+    if (user.status === "approved") {
+      return res.status(400).json({
+        StatusCode: 400,
+        IsSuccess: false,
+        ErrorMessage: [
+          { message: "User status is already approved and cannot be changed." },
+        ],
+        Result: null,
+      });
+    }
+
+    user.status = req.body.status;
+    if (req.body.status === "approved") user.isVerified = true;
+    await user.save();
+
+    await sendStatusUpdateEmail(user, req.body.status, userType);
 
     res.status(200).json({
       StatusCode: 200,
@@ -210,15 +235,16 @@ export const updateSellerStatus = async (req, res) => {
       ErrorMessage: [],
       Result: {
         message: "Status updated successfully",
-        seller: {
-          id: seller._id,
-          name: seller.name,
-          email: seller.email,
-          status: seller.status,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          status: user.status,
         },
       },
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({
       StatusCode: 500,
       IsSuccess: false,

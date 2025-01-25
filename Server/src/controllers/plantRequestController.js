@@ -100,6 +100,52 @@ export const sellerRequest = async (req, res) => {
   }
 };
 
+export const sellerRequestById = async (req, res) => {
+  try {
+    const sellerId = req.params.sellerId;
+
+    if (!sellerId) {
+      return res.status(403).json({
+        StatusCode: 403,
+        IsSuccess: false,
+        ErrorMessage: [{ message: "Seller ID and Request ID are required" }],
+        Result: null,
+      });
+    }
+
+    const request = await PlantRequest.findOne({
+      sellerId: sellerId,
+    }).populate("plantId", "name quantity price location");
+
+    if (!request) {
+      return res.status(404).json({
+        StatusCode: 404,
+        IsSuccess: false,
+        ErrorMessage: [{ message: "Request not found" }],
+        Result: null,
+      });
+    }
+
+    res.status(200).json({
+      StatusCode: 200,
+      IsSuccess: true,
+      ErrorMessage: [],
+      Result: {
+        message: "Seller request fetched successfully",
+        request,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching seller request:", error);
+    res.status(500).json({
+      StatusCode: 500,
+      IsSuccess: false,
+      ErrorMessage: [{ message: "Error fetching seller request" }],
+      Result: null,
+    });
+  }
+};
+
 export const getFarmerSellerRequests = async (req, res) => {
   try {
     const {

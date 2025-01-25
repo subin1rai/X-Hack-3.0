@@ -1,7 +1,8 @@
 import Farmer from "../models/FarmerModel.js";
 import bcrypt from "bcrypt";
 import cloudinary from "cloudinary";
-import { generateAccessToken } from "../middlewares/authMiddleware.js";
+import { sendStatusUpdateEmail } from "../utils/emailService.js";
+import Seller from "../models/SellerModel.js";
 
 export const registerFarmer = async (req, res) => {
   const {
@@ -85,8 +86,6 @@ export const registerFarmer = async (req, res) => {
   }
 };
 
-
-
 export const getAllFarmers = async (req, res) => {
   try {
     const farmers = await Farmer.find({}).select("-password");
@@ -109,53 +108,6 @@ export const getAllFarmers = async (req, res) => {
       StatusCode: 500,
       IsSuccess: false,
       ErrorMessage: [{ message: "Error fetching farmers" }],
-      Result: null,
-    });
-  }
-};
-
-export const updateFarmerStatus = async (req, res) => {
-  const { farmerId } = req.params;
-  const { status } = req.body;
-
-  try {
-    const farmer = await Farmer.findById(farmerId);
-    if (!farmer) {
-      return res.status(404).json({
-        StatusCode: 404,
-        IsSuccess: false,
-        ErrorMessage: [{ message: "Farmer not found" }],
-        Result: null,
-      });
-    }
-
-    farmer.status = status;
-    if (status === "approved") {
-      farmer.isVerified = true;
-    }
-    await farmer.save();
-
-    res.status(200).json({
-      StatusCode: 200,
-      IsSuccess: true,
-      ErrorMessage: [],
-      Result: {
-        message: "Status updated successfully",
-        farmer: {
-          id: farmer._id,
-          fullName: farmer.fullName,
-          email: farmer.email,
-          status: farmer.status,
-          farmName: farmer.farmName,
-        },
-      },
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      StatusCode: 500,
-      IsSuccess: false,
-      ErrorMessage: [{ message: "Error updating farmer status" }],
       Result: null,
     });
   }

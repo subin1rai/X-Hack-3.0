@@ -8,6 +8,7 @@ import {
   createPlantRequest,
   getFarmerSellerRequests,
   sellerRequest,
+  sellerRequestById,
 } from "../controllers/plantRequestController.js";
 
 const plantRequestRouter = express.Router();
@@ -23,6 +24,13 @@ plantRequestRouter.get(
   authenticateToken,
   isSeller,
   sellerRequest
+);
+
+plantRequestRouter.get(
+  "/seller-requests/:sellerId",
+  authenticateToken,
+  isSeller,
+  sellerRequestById
 );
 
 plantRequestRouter.get(
