@@ -7,11 +7,13 @@ export const createPlantRequest = async (req, res) => {
     const { quantity, requestedPrice, deliveryLocation, deliveryDate, notes } =
       req.body;
 
-    if (!quantity || !requestedPrice || !deliveryLocation || !deliveryDate) {
+    console.log("Token payload:", req.user);
+
+    if (!req.user.sellerId) {
       return res.status(400).json({
         StatusCode: 400,
         IsSuccess: false,
-        ErrorMessage: [{ message: "Missing required fields" }],
+        ErrorMessage: [{ message: "Seller authentication required" }],
         Result: null,
       });
     }
@@ -32,7 +34,7 @@ export const createPlantRequest = async (req, res) => {
       quantity,
       requestedPrice,
       deliveryLocation,
-      deliveryDate,
+      deliveryDate: new Date(deliveryDate),
       notes,
     });
 
@@ -43,7 +45,7 @@ export const createPlantRequest = async (req, res) => {
       "name"
     );
 
-    res.status(201).json({
+    return res.status(201).json({
       StatusCode: 201,
       IsSuccess: true,
       ErrorMessage: [],
@@ -54,10 +56,47 @@ export const createPlantRequest = async (req, res) => {
     });
   } catch (error) {
     console.error("Error creating plant request:", error);
+    return res.status(500).json({
+      StatusCode: 500,
+      IsSuccess: false,
+      ErrorMessage: [{ message: error.message || "Error creating request" }],
+      Result: null,
+    });
+  }
+};
+
+export const sellerRequest = async (req, res) => {
+  try {
+    const sellerId = req.user.sellerId;
+    if (!sellerId) {
+      return res.status(403).json({
+        StatusCode: 403,
+        IsSuccess: false,
+        ErrorMessage: [{ message: "Unauthorized access for non-sellers" }],
+        Result: null,
+      });
+    }
+
+    const requests = await PlantRequest.find({ sellerId }).populate(
+      "plantId",
+      "name quantity price location"
+    );
+
+    res.status(200).json({
+      StatusCode: 200,
+      IsSuccess: true,
+      ErrorMessage: [],
+      Result: {
+        message: "Seller requests fetched successfully",
+        requests,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching seller requests:", error);
     res.status(500).json({
       StatusCode: 500,
       IsSuccess: false,
-      ErrorMessage: [{ message: "Error creating request" }],
+      ErrorMessage: [{ message: "Error fetching seller requests" }],
       Result: null,
     });
   }
