@@ -10,16 +10,20 @@ const Register = () => {
     kycImage: "",
     password: "",
     role: "",
+    businessName: "",
+    phone: "",
+    address: "",
+    farmName: "",
   });
 
+  console.log(user);
   const baseUrl = import.meta.env.VITE_BASE_URL;
   const [error, setError] = useState("");
-
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
-  const handleChange = async (e) => {
+  const handleChange = (e) => {
     setError("");
     setUser((prev) => ({
       ...prev,
@@ -53,54 +57,73 @@ const Register = () => {
     setError("");
 
     try {
+      let endpoint = "";
+      let payload = {};
+
+      // Determine the endpoint and payload based on the role
       if (user.role === "seller") {
-        const response = await axios.post(`${baseUrl}/api/register`, user);
+        endpoint = `${baseUrl}/api/register`;
+        payload = {
+          name: user.name,
+          email: user.email,
+          password: user.password,
+          phone: user.phone,
+          address: user.address,
+          kycImage: user.kycImage,
+          businessName: user.businessName, // Only for seller
+        };
       } else if (user.role === "farmer") {
-        const response = await axios.post(
-          `${baseUrl}/api/farmers/register`,
-          user
-        );
+        endpoint = `${baseUrl}/api/farmers/register`;
+        payload = {
+          fullName: user.name,
+          email: user.email,
+          password: user.password,
+          phone: user.phone,
+          address: user.address,
+          licenseImage: user.kycImage,
+          farmName: user.farmName, // Only for farmer
+        };
+      } else {
+        throw new Error("Please select a valid role.");
       }
+
+      // Make the API request
+      const response = await axios.post(endpoint, payload);
 
       navigate("/login");
     } catch (error) {
       console.log(error);
-      if (error.response?.data?.ErrorMessage?.[0]?.message) {
-        setError(error.response.data.ErrorMessage[0].message);
-      } else {
-        setError("Registration failed. Please try again.");
-      }
+      const errorMessage =
+        error.response?.data?.ErrorMessage?.[0]?.message ||
+        "Registration failed. Please try again.";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
-  console.log(error);
-
   return (
-    <div className="flex justify-around w-screen h-screen items-center  ">
-      <div className="flex flex-col justify-center items-center  flex-1">
-        <img src={images.register} alt="" className="w-50% h-50%" />
+    <div className="flex justify-around w-screen h-screen items-center bg-gray-50">
+      <div className="flex flex-col justify-center items-center flex-1">
+        <img src={images.register} alt="" className="w-1/2 h-1/2" />
         <h3 className="font-bold text-3xl">
-          Welcome to
-          <span className="text-[#2D775C]"> Annatripti</span>{" "}
+          Welcome to <span className="text-[#2D775C]">Annatripti</span>
         </h3>
-        <p></p>
       </div>
-      <div className="flex flex-col gap-3 items-center flex-1">
+      <div className="flex flex-col items-center flex-1">
         <h3 className="font-bold text-3xl">Create your account!</h3>
-        <p>Welcome! please fill the details to get started...</p>
+        <p className="text-gray-500">Fill the details to get started...</p>
         <form
-          action=""
           onSubmit={handleSubmit}
-          className="w-full flex flex-col items-center gap-6"
+          className="w-full max-w-[600px] grid grid-cols-2 gap-6 mt-8"
         >
           {error && (
-            <p className="bg-red-400 text-white rounded-md p-4 w-[400px] ">
+            <p className="bg-red-400 text-white rounded-md p-4 col-span-2">
               {error}
             </p>
           )}
 
+          {/* Full Name */}
           <div className="flex flex-col gap-2">
             <label htmlFor="name">Full Name</label>
             <input
@@ -108,38 +131,28 @@ const Register = () => {
               name="name"
               onChange={handleChange}
               placeholder="Enter your fullname"
-              className="border border-gray-400 px-4 py-3 w-[400px] rounded-xl"
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <label htmlFor="name" className="">
-              Email
-            </label>
-            <input
-              type="text"
-              name="email"
-              onChange={handleChange}
-              placeholder="Enter your email"
-              className="border border-gray-400 px-4 py-3 w-[400px] rounded-xl"
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <label htmlFor="name">PAN Image</label>
-            <input
-              type="file"
-              name="kycImage"
-              onChange={handleImageUpload}
-              placeholder="Enter your fullname"
-              className="border border-gray-400 px-4 py-3 w-[400px] rounded-xl"
+              className="border border-gray-400 px-4 py-3 rounded-xl"
             />
           </div>
 
+          {/* Email */}
           <div className="flex flex-col gap-2">
-            <label htmlFor="name">Role</label>
+            <label htmlFor="email">Email</label>
+            <input
+              type="email"
+              name="email"
+              onChange={handleChange}
+              placeholder="Enter your email"
+              className="border border-gray-400 px-4 py-3 rounded-xl"
+            />
+          </div>
+
+          {/* Role */}
+          <div className="flex flex-col gap-2">
+            <label htmlFor="role">Role</label>
             <select
               name="role"
-              id=""
-              className="border border-gray-400 px-4 py-3 w-[400px] rounded-xl"
+              className="border border-gray-400 px-4 py-3 rounded-xl"
               onChange={handleChange}
             >
               <option value="">Select a role</option>
@@ -148,30 +161,94 @@ const Register = () => {
             </select>
           </div>
 
+          {/* Password */}
           <div className="flex flex-col gap-2">
-            <label htmlFor="name">Password</label>
+            <label htmlFor="password">Password</label>
             <input
-              name="password"
               type="password"
+              name="password"
               onChange={handleChange}
               placeholder="Enter your password"
-              className="border border-gray-400 px-4 py-3 w-[400px] rounded-xl"
+              className="border border-gray-400 px-4 py-3 rounded-xl"
             />
           </div>
 
-          {loading ? (
-            <button className="bg-[#2D775C] text-white w-[400px] rounded-xl py-3 mt-6">
-              Registering....
-            </button>
-          ) : (
-            <button className="bg-[#2D775C] text-white w-[400px] rounded-xl py-3 mt-6">
-              Register now
-            </button>
-          )}
-          <p>
+          {/* Business Name */}
+          <div className="flex flex-col gap-2">
+            <label htmlFor="businessName">Business Name</label>
+            <input
+              type="text"
+              name="businessName"
+              onChange={handleChange}
+              placeholder="Enter your business name"
+              className="border border-gray-400 px-4 py-3 rounded-xl"
+            />
+          </div>
+
+          {/* Phone */}
+          <div className="flex flex-col gap-2">
+            <label htmlFor="phone">Phone</label>
+            <input
+              type="text"
+              name="phone"
+              onChange={handleChange}
+              placeholder="Enter your phone number"
+              className="border border-gray-400 px-4 py-3 rounded-xl"
+            />
+          </div>
+
+          {/* Address */}
+          <div className="flex flex-col gap-2">
+            <label htmlFor="address">Address</label>
+            <input
+              type="text"
+              name="address"
+              onChange={handleChange}
+              placeholder="Enter your address"
+              className="border border-gray-400 px-4 py-3 rounded-xl"
+            />
+          </div>
+
+          {/* Farm Name */}
+          <div className="flex flex-col gap-2">
+            <label htmlFor="farmName">Farm Name</label>
+            <input
+              type="text"
+              name="farmName"
+              onChange={handleChange}
+              placeholder="Enter your farm name"
+              className="border border-gray-400 px-4 py-3 rounded-xl"
+            />
+          </div>
+
+          {/* PAN Image */}
+          <div className="flex flex-col gap-2 col-span-2">
+            <label htmlFor="kycImage">PAN Image</label>
+            <input
+              type="file"
+              name="kycImage"
+              onChange={handleImageUpload}
+              className="border border-gray-400 px-4 py-3 rounded-xl"
+            />
+          </div>
+
+          {/* Submit Button */}
+          <div className="col-span-2">
+            {loading ? (
+              <button className="bg-[#2D775C] text-white w-full rounded-xl py-3">
+                Registering...
+              </button>
+            ) : (
+              <button className="bg-[#2D775C] text-white w-full rounded-xl py-3">
+                Register now
+              </button>
+            )}
+          </div>
+
+          <p className="col-span-2 text-center">
             Already have an account?{" "}
             <Link to="/login" className="text-[#2D775C] font-bold">
-              login now
+              Login now
             </Link>
           </p>
         </form>
