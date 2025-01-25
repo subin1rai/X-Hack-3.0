@@ -13,6 +13,7 @@ import recommendations from "../assets/recommendation.png";
 import chat from "../assets/chat.png";
 import add from "../assets/add.png";
 import comment from "../assets/comment.png";
+import detect from "../assets/detect.jpg";
 
 export default {
   register,
@@ -29,6 +30,7 @@ export default {
   recommendations,
   chat,
   add,
-  comment
+  comment,
+  detect
 };
 

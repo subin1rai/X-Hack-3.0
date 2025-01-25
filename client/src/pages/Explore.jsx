@@ -1,6 +1,7 @@
 import React from 'react'
 import Sidebar from '../components/Sidebar';
 import Topbar from '../components/Topbar';
+import PlantRequests from '../components/plantRequests';
 
 const Explore = () => {
   return (
@@ -8,6 +9,9 @@ const Explore = () => {
     <Sidebar />
     <div className="flex flex-col">
       <Topbar />
+      <div>
+          <PlantRequests/>
+        </div>
     </div>
   </div>
   )
