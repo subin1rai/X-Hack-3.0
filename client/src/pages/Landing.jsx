@@ -9,7 +9,9 @@ const Landing = () => {
       {/* navbar */}
       <div className="flex justify-between items-center px-16 pt-4">
         <div>
-          <p>logo</p>
+        <p className="font-bold text-3xl">
+            Anna<span className="text-[#2D775C]">Tripti</span>
+          </p>
         </div>
         <div className="flex">
           <ul className="flex gap-8">
@@ -37,12 +39,12 @@ const Landing = () => {
       {/* hero */}
       <div className="relative flex items-center justify-between h-screen bg-gradient-to-br from-green-50 to-green-200">
   {/* Text Section */}
-  <div className="absolute z-10 top-[20%] left-[10%] max-w-lg">
+  <div className="absolute z-10 top-[20%] left-[10%] max-w-[600px]">
     <h1 className="text-5xl font-extrabold text-gray-800 leading-tight">
       Revolutionizing Farming
       <br />
       with
-      <span className="text-green-600"> AI-Powered Insights</span>
+      <span className="text-green-600 max-w-[700px]"> AI-Powered Insights</span>
     </h1>
     <p className="text-xl text-gray-600 mt-4 leading-relaxed">
       Detect diseases, plan your crops, and connect with markets—all in one platform.
@@ -75,7 +77,7 @@ const Landing = () => {
       <img
         src={images.plantd}
         alt="Plant Disease Detection"
-        className="w-[90px] h-[90px] mb-4"
+        className="w-[120px] h-[120px] mb-4"
       />
       <h2 className="text-2xl font-bold mb-2 text-gray-800">
         Plant Disease Detection
@@ -90,7 +92,7 @@ const Landing = () => {
       <img
         src={images.plantd}
         alt="Seasonal Crop Suggestions"
-        className="w-[90px] h-[90px] mb-4"
+        className="w-[130px] h-[130px] mb-4"
       />
       <h2 className="text-2xl font-bold mb-2 text-gray-800">
         Seasonal Crop Suggestions
@@ -105,7 +107,7 @@ const Landing = () => {
       <img
         src={images.shopplant}
         alt="Farmer-Marketer Marketplace"
-        className="w-[90px] h-[90px] mb-4"
+        className="w-[120px] h-[120px] mb-4"
       />
       <h2 className="text-2xl font-bold mb-2 text-gray-800">
         Farmer-Marketer Marketplace

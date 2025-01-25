@@ -3,7 +3,9 @@ import { X, Upload } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
 import images from "../constants/images";
+import axios from "axios";
 
+// Modal Component
 const Modal = ({ isOpen, onClose, children }) => {
   useEffect(() => {
     if (isOpen) {
@@ -20,7 +22,11 @@ const Modal = ({ isOpen, onClose, children }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="fixed inset-0 bg-black bg-opacity-50" onClick={onClose} />
+      <div
+        className="fixed inset-0 bg-black "
+        style={{ opacity: 0.5 }}
+        onClick={onClose}
+      />
       <div className="relative z-50 w-full max-w-2xl rounded-lg bg-white p-6">
         {children}
       </div>
@@ -28,6 +34,7 @@ const Modal = ({ isOpen, onClose, children }) => {
   );
 };
 
+// Create Blog Post Component
 const CreateBlogPost = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
     title: "",
@@ -35,20 +42,14 @@ const CreateBlogPost = ({ isOpen, onClose }) => {
     tags: "",
     images: [],
   });
-
   const [previewImages, setPreviewImages] = useState([]);
+  
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [post, setPost] = useState('');
+  const baseUrl = import.meta.env.VITE_BASE_URL;
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const transformedData = {
-      ...formData,
-      tags: formData.tags.split(",").map((tag) => tag.trim()),
-      isPublished: true,
-    };
-    console.log("Submitting:", transformedData);
-    onClose();
-  };
-
+  // Handle Image Upload
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
     setFormData((prev) => ({
@@ -59,6 +60,7 @@ const CreateBlogPost = ({ isOpen, onClose }) => {
     setPreviewImages((prev) => [...prev, ...newPreviews]);
   };
 
+  // Handle Image Removal
   const removeImage = (index) => {
     setFormData((prev) => ({
       ...prev,
@@ -68,11 +70,83 @@ const CreateBlogPost = ({ isOpen, onClose }) => {
     setPreviewImages((prev) => prev.filter((_, i) => i !== index));
   };
 
+  // Cleanup URLs on Unmount
   useEffect(() => {
     return () => {
       previewImages.forEach((url) => URL.revokeObjectURL(url));
     };
   }, []);
+
+  // Handle Form Submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    const token = localStorage.getItem("token");
+
+    const formDataToSend = new FormData();
+    formDataToSend.append("title", formData.title);
+    formDataToSend.append("content", formData.content);
+    formDataToSend.append("tags", formData.tags);
+
+    formData.images.forEach((file) => {
+      formDataToSend.append("images", file);
+    });
+
+    try {
+      setLoading(true);
+      const response = await axios.post(`${baseUrl}/api/blogs/create`, formDataToSend, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "69420",
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      if (response.data.IsSuccess) {
+        console.log("Blog Created:", response.data);
+        onClose();
+      } else {
+        setError(response.data.ErrorMessage[0]?.message || "Failed to create the blog.");
+      }
+    } catch (err) {
+      console.error("Error:", err.response?.data || err.message);
+      setError(err.response?.data?.ErrorMessage[0]?.message || "Internal server error.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchData = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        setError("Authentication token is missing. Please log in again.");
+        setLoading(false);
+        return;
+      }
+
+      const response = await axios.get(`${baseUrl}/api/blogs`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "69420",
+        },
+      });
+      console.log(response);
+      setPost(response.data.Result || []); 
+      setError("");
+    } catch (err) {
+      console.error("Error:", err.response?.data || err.message);
+      setError(err.response?.data?.ErrorMessage[0]?.message || "Failed to fetch posts.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -86,57 +160,45 @@ const CreateBlogPost = ({ isOpen, onClose }) => {
 
         <h2 className="mb-6 text-2xl font-bold">Create New Blog Post</h2>
 
+        {error && <p className="mb-4 text-red-500 font-medium">{error}</p>}
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Title
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Title</label>
             <input
               type="text"
               placeholder="Enter an engaging title"
               className="w-full rounded-lg border border-gray-300 p-3 text-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               value={formData.title}
-              onChange={(e) =>
-                setFormData({ ...formData, title: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               maxLength={100}
             />
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Content
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Content</label>
             <textarea
               placeholder="Write your blog content..."
               rows="6"
               className="w-full rounded-lg border border-gray-300 p-3 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               value={formData.content}
-              onChange={(e) =>
-                setFormData({ ...formData, content: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
             />
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Tags
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Tags</label>
             <input
               type="text"
-              placeholder="Enter tags separated by commas (e.g., tech, programming, web)"
+              placeholder="Enter tags separated by commas (e.g., tech, programming)"
               className="w-full rounded-lg border border-gray-300 p-3 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               value={formData.tags}
-              onChange={(e) =>
-                setFormData({ ...formData, tags: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
             />
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Images
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Images</label>
             <div className="space-y-4">
               <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-300 p-3 hover:bg-gray-50">
                 <Upload className="h-5 w-5" />
@@ -184,8 +246,9 @@ const CreateBlogPost = ({ isOpen, onClose }) => {
             <button
               type="submit"
               className="rounded-lg bg-blue-600 px-6 py-2 text-white hover:bg-blue-700"
+              disabled={loading}
             >
-              Publish Post
+              {loading ? "Publishing..." : "Publish Post"}
             </button>
           </div>
         </form>
@@ -194,6 +257,7 @@ const CreateBlogPost = ({ isOpen, onClose }) => {
   );
 };
 
+// Blog Post Component
 const BlogPost = ({ title, author, date, tags, image }) => (
   <div className="bg-gray-200 h-[520px] w-[400px] rounded-2xl border-1 border-gray-100">
     <div>
@@ -217,7 +281,6 @@ const BlogPost = ({ title, author, date, tags, image }) => (
         <hr className="border-t-2 border-gray-400" />
       </div>
     </div>
-
     <div className="flex justify-center items-center gap-4 pt-4">
       <img src={images.comment} alt="" className="w-[24px] h-[24px]" />
       <p>
@@ -227,29 +290,23 @@ const BlogPost = ({ title, author, date, tags, image }) => (
   </div>
 );
 
+// Main Community Component
 const Community = () => {
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
 
   const blogPosts = [
     {
-      title: "Computer science Papers Every Developer Should Read",
-      author: "susan rai",
+      title: "Computer Science Papers Every Developer Should Read",
+      author: "Susan Rai",
       date: "Jan 16",
-      tags: ["IIC", "Heros", "Winner"],
+      tags: ["IIC", "Heroes", "Winner"],
       image: images.farmerMan,
     },
     {
-      title: "Computer science Papers Every Developer Should Read",
-      author: "susan rai",
-      date: "Jan 16",
-      tags: ["IIC", "Heros", "Winner"],
-      image: images.farmerMan,
-    },
-    {
-      title: "Computer science Papers Every Developer Should Read",
-      author: "susan rai",
-      date: "Jan 16",
-      tags: ["IIC", "Heros", "Winner"],
+      title: "Top 10 Farming Techniques fsfsdfd sdfs d",
+      author: "John Doe",
+      date: "Jan 25",
+      tags: ["Farming", "Techniques"],
       image: images.farmerMan,
     },
   ];
@@ -267,7 +324,7 @@ const Community = () => {
           onClick={() => setIsCreatePostOpen(true)}
           className="mx-6 w-fit mb-4 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 self-end"
         >
-          Create post
+          Create Post
         </button>
 
         <CreateBlogPost
