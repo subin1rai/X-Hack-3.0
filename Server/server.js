@@ -6,16 +6,14 @@ import connectDB from "./src/config/db.js";
 const startServer = async () => {
   try {
     await connectDB();
-
-    const port = config.port || 3000;
     const server = http.createServer(app);
 
-    server.listen(port, () => {
-      console.log(`✅ Server is running on port: ${port}`);
-      console.log(`🌐 Click to open: http://localhost:${port}`);
+    server.listen(config.port, async () => {
+      console.log(`✅ Server: http://localhost:${config.port}`);
     });
   } catch (error) {
-    console.error(`❌ Error starting the server: ${error.message}`);
+    console.error(`❌ Error: ${error.message}`);
+    process.exit(1);
   }
 };
 
