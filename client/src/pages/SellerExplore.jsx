@@ -11,117 +11,17 @@ const SellerExplore = () => {
 
   const token = localStorage.getItem("token");
 
-  const [vegetables, setVegetables] = useState([
-    {
-      id: 1,
-      name: "Fresh Tomatoes",
-      farmer: "Green Valley Farms",
-      farmerName: "Rajesh Kumar",
-      email: "rajesh@greenvalley.com",
-      phone: "+91 98765 43210",
-      location: "Punjab",
-      quantity: "500 kg",
-      price: "₹40/kg",
-      quality: "Grade A",
-      harvestDate: "25 Jan 2024",
-      description:
-        "Fresh, organically grown tomatoes harvested daily. Perfect for commercial use with consistent supply.",
-      image: "/api/placeholder/400/250",
-    },
-    {
-      id: 2,
-      name: "Organic Potatoes",
-      farmer: "Nature's Best",
-      farmerName: "Amit Singh",
-      email: "amit@naturesbest.com",
-      phone: "+91 98765 43211",
-      location: "Haryana",
-      quantity: "1000 kg",
-      price: "₹25/kg",
-      quality: "Premium",
-      harvestDate: "23 Jan 2024",
-      description:
-        "High-quality potatoes grown using organic farming methods. Ideal for restaurants and hotels.",
-      image: "/api/placeholder/400/250",
-    },
-    {
-      id: 3,
-      name: "Green Peas",
-      farmer: "Krishna Farms",
-      farmerName: "Krishna Patel",
-      email: "krishna@farms.com",
-      phone: "+91 98765 43212",
-      location: "Uttar Pradesh",
-      quantity: "300 kg",
-      price: "₹60/kg",
-      quality: "Grade A",
-      harvestDate: "24 Jan 2024",
-      description:
-        "Fresh green peas, perfect for commercial kitchens and food processing units.",
-      image: "/api/placeholder/400/250",
-    },
-    {
-      id: 4,
-      name: "Red Onions",
-      farmer: "Sunshine Agro",
-      farmerName: "Priya Sharma",
-      email: "priya@sunshineagro.com",
-      phone: "+91 98765 43213",
-      location: "Maharashtra",
-      quantity: "2000 kg",
-      price: "₹35/kg",
-      quality: "Premium",
-      harvestDate: "22 Jan 2024",
-      description:
-        "Premium quality red onions with long shelf life. Bulk orders welcome.",
-      image: "/api/placeholder/400/250",
-    },
-    {
-      id: 5,
-      name: "Fresh Cauliflower",
-      farmer: "Valley Fresh",
-      farmerName: "Suresh Kumar",
-      email: "suresh@valleyfresh.com",
-      phone: "+91 98765 43214",
-      location: "Himachal Pradesh",
-      quantity: "400 kg",
-      price: "₹45/kg",
-      quality: "Grade A",
-      harvestDate: "26 Jan 2024",
-      description:
-        "Farm fresh cauliflower grown in the valleys of Himachal. Best for restaurants.",
-      image: "/api/placeholder/400/250",
-    },
-    {
-      id: 6,
-      name: "Green Chilies",
-      farmer: "Spice Garden",
-      farmerName: "Mohammed Ali",
-      email: "ali@spicegarden.com",
-      phone: "+91 98765 43215",
-      location: "Andhra Pradesh",
-      quantity: "200 kg",
-      price: "₹80/kg",
-      quality: "Premium",
-      harvestDate: "25 Jan 2024",
-      description:
-        "Fresh green chilies with perfect heat level. Sourced directly from organic farms.",
-      image: "/api/placeholder/400/250",
-    },
-  ]);
+  const [vegetables, setVegetables] = useState([]);
 
   useEffect(() => {
     const fetchPlants = async () => {
       try {
-        const response = await axios.get(
-          `${baseUrl}/api/plants/farmer-plants`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "ngrok-skip-browser-warning": "69420",
-            },
-          }
-        );
+        const response = await axios.get(`${baseUrl}/api/plants/getAllPlants`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": "69420",
+          },
+        });
 
         setVegetables(response.data.Result.plants);
       } catch (error) {
