@@ -20,7 +20,7 @@ const Sidebar = () => {
         <div className="flex flex-col gap-6">
           {role === "admin" && (
             <>
-              <Link className="text-xl hover:text-[#2D775C] flex gap-4">
+              <Link className="text-xl hover:text-[#2D775C] flex gap-4" to={'/user'}>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
@@ -41,11 +41,21 @@ const Sidebar = () => {
                 Users
               </Link>
 
-              <Link className="text-xl  hover:text-[#2D775C]">
-                Verify Farmers
+              <Link className="flex items-center text-xl hover:text-[#2D775C] gap-4" to={'/verifyFarmer'}>
+                <img
+                  src={images.farmericon}
+                  className="h-[28px]"
+                  alt="Farmer Icon"
+                />
+                <span className="leading-none">Verify Farmers</span>
               </Link>
 
-              <Link className="text-xl  hover:text-[#2D775C]">
+              <Link className="flex items-center text-xl hover:text-[#2D775C] gap-4" to={'/verifySeller'}>
+                <img
+                  src={images.sellericon}
+                  className="h-[28px]"
+                  alt="Farmer Icon"
+                />
                 Verify Sellers
               </Link>
             </>
@@ -53,19 +63,54 @@ const Sidebar = () => {
 
           {role === "farmer" && (
             <>
-              <Link className="text-xl  hover:text-[#2D775C]">Dashboard</Link>
-              <Link className="text-xl  hover:text-[#2D775C]">
+               <Link className="flex items-center text-xl hover:text-[#2D775C] gap-4" to={'/farmerDashboard'}>
+                <img
+                  src={images.dashboard}
+                  className="h-[28px]"
+                  alt="Farmer Icon"
+                />Dashboard</Link>
+               <Link className="flex items-center text-xl hover:text-[#2D775C] gap-4" to={'/detectDisease'}>
+                <img
+                  src={images.ai}
+                  className="h-[28px]"
+                  alt="Farmer Icon"
+                />
                 Detect Disease
               </Link>
-              <Link className="text-xl  hover:text-[#2D775C]">Community</Link>
-              <Link className="text-xl  hover:text-[#2D775C]">
+              <Link className="flex items-center text-xl hover:text-[#2D775C] gap-4" to={'/community'}>
+                <img
+                  src={images.community}
+                  className="h-[28px]"
+                  alt="Farmer Icon"
+                />Community</Link>
+            <Link className="flex items-center text-xl hover:text-[#2D775C] gap-4" to={'/recommendations'}>
+                <img
+                  src={images.recommendations}
+                  className="h-[28px]"
+                  alt="Farmer Icon"
+                />
                 Recommendations
               </Link>
-              <Link className="text-xl  hover:text-[#2D775C]">
+              <Link className="flex items-center text-xl hover:text-[#2D775C] gap-4" to={'/explore'}>
+                <img
+                  src={images.explore}
+                  className="h-[28px]"
+                  alt="Farmer Icon"
+                />
                 Explore Sellers
               </Link>
-              <Link className="text-xl  hover:text-[#2D775C]">Add Items</Link>
-              <Link className="text-xl  hover:text-[#2D775C]">Chat</Link>
+              <Link className="flex items-center text-xl hover:text-[#2D775C] gap-4" to={'/add'}>
+                <img
+                  src={images.add}
+                  className="h-[28px]"
+                  alt="Farmer Icon"
+                />Add Items</Link>
+              <Link className="flex items-center text-xl hover:text-[#2D775C] gap-4" to={'/chat'}>
+                <img
+                  src={images.chat}
+                  className="h-[28px]"
+                  alt="Farmer Icon"
+                />Chat</Link>
             </>
           )}
 
