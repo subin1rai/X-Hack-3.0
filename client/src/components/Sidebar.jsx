@@ -120,9 +120,9 @@ const Sidebar = () => {
               </Link>
               <Link
                 className={`flex items-center text-xl hover:text-[#2D775C] hover:bg-[#2D775C]/5 gap-4 px-4 py-2 rounded-lg transition-colors ${isActive(
-                  "/recommendations"
+                  "/recommandations"
                 )}`}
-                to="/recommendations"
+                to="/recommandations"
               >
                 <img
                   src={images.recommendations}

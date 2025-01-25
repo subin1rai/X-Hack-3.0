@@ -44,10 +44,12 @@ const AddPlantForm = ({ showForm, setShowForm, fetchVegDetails }) => {
           "ngrok-skip-browser-warning": "69420",
         },
       });
+      showToast("Plant added successfully!", "success");
       setShowForm(false);
       fetchVegDetails();
     } catch (error) {
       console.error("Error adding plant:", error);
+      showToast("Failed to add plant", "error");
     }
   };
 
@@ -306,6 +308,20 @@ const Add = () => {
 
   const baseUrl = import.meta.env.VITE_BASE_URL;
 
+  const [toast, setToast] = useState({
+    show: false,
+    message: "",
+    type: "info",
+  });
+
+  const showToast = (message, type = "info") => {
+    setToast({ show: true, message, type });
+    setTimeout(
+      () => setToast({ show: false, message: "", type: "info" }),
+      3000
+    );
+  };
+
   const fetchVegDetails = async () => {
     setLoading(true);
     setError("");
@@ -343,8 +359,10 @@ const Add = () => {
       });
       fetchVegDetails();
       setShowDeleteConfirm(null);
+      showToast("Plant deleted successfully!", "success");
     } catch (error) {
       console.error("Error deleting plant:", error);
+      showToast("Failed to delete plant", "error");
     }
   };
 
@@ -353,7 +371,7 @@ const Add = () => {
       <Sidebar />
       <div className="flex flex-col w-full">
         <Topbar />
-
+        {toast.show && <Toast message={toast.message} type={toast.type} />}
         <div className="p-6 h-[90vh] overflow-y-scroll">
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-3xl font-bold text-gray-800">
@@ -443,6 +461,7 @@ const Add = () => {
         showForm={showForm}
         setShowForm={setShowForm}
         fetchVegDetails={fetchVegDetails}
+        showToast={showToast}
       />
 
       {/* Delete Confirmation Dialog */}

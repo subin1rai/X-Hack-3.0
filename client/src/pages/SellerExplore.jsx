@@ -31,6 +31,8 @@ const SellerExplore = () => {
 
     fetchPlants();
   }, [baseUrl, token]);
+
+  console.log(vegetables);
   return (
     <div className="flex gap-1 bg-gray-50 min-h-screen">
       <Sidebar />
@@ -68,7 +70,7 @@ const SellerExplore = () => {
                     className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 flex flex-col"
                   >
                     <img
-                      src={veg.image}
+                      src={veg.images?.[0] || "https://via.placeholder.com/150"}
                       alt={veg.name}
                       className="w-full h-56 object-cover rounded-t-xl"
                     />
@@ -131,7 +133,10 @@ const SellerExplore = () => {
 
                 <div className="p-6 space-y-6">
                   <img
-                    src={selectedVeg.image}
+                    src={
+                      selectedVeg?.images?.[0] ||
+                      "https://via.placeholder.com/150"
+                    }
                     alt={selectedVeg.name}
                     className="w-full h-48 object-cover rounded-xl"
                   />
