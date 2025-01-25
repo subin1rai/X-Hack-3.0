@@ -2,15 +2,20 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
-import userRouter from "./routes/userRoutes.js";
+import userRouter from "./routes/sellerRoutes.js";
 import farmerRouter from "./routes/farmerRouter.js";
 import plantRouter from "./routes/plantRouter.js";
+import plantRequestRouter from "./routes/plantRequestRouter.js";
 
 const corsOptions = {
   origin: "http://localhost:5173",
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "ngrok-skip-browser-warning",
+  ],
 };
 
 const app = express();
@@ -20,6 +25,7 @@ app.options("*", cors(corsOptions));
 
 app.use(cookieParser());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
   res.json({ message: "Let's hack the hackathon..." });
@@ -28,6 +34,7 @@ app.get("/", (req, res) => {
 app.use("/api", userRouter);
 app.use("/api/farmers", farmerRouter);
 app.use("/api/plants", plantRouter);
+app.use("/api/plantsrequest", plantRequestRouter);
 
 app.use((req, res, next) => {
   const error = new Error("Not Found");

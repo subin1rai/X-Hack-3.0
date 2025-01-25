@@ -160,6 +160,7 @@ export const deletePlant = async (req, res) => {
 export const getFarmerPlants = async (req, res) => {
   try {
     const plants = await Plant.find({ farmerId: req.user.id });
+
     res.json({
       StatusCode: 200,
       IsSuccess: true,
