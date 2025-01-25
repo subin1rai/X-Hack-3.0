@@ -53,9 +53,18 @@ const Register = () => {
     setError("");
 
     try {
-      const response = await axios.post(`${baseUrl}/api/register`, user);
+      if (user.role === "seller") {
+        const response = await axios.post(`${baseUrl}/api/register`, user);
+      } else if (user.role === "farmer") {
+        const response = await axios.post(
+          `${baseUrl}/api/farmers/register`,
+          user
+        );
+      }
+
       navigate("/login");
     } catch (error) {
+      console.log(error);
       if (error.response?.data?.ErrorMessage?.[0]?.message) {
         setError(error.response.data.ErrorMessage[0].message);
       } else {
