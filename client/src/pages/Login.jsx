@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useState } from "react";
 import images from "../constants/images";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [user, setUser] = useState({
@@ -30,27 +30,33 @@ const Login = () => {
 
     try {
       const response = await axios.post(`${baseUrl}/api/login`, user);
-      localStorage.setItem("user", JSON.stringify(response.data.Result.user));
+      console.log(response);
+      const userData = response.data.Result.user;
+      localStorage.setItem("user", JSON.stringify(userData));
       localStorage.setItem("token", response.data.Result.token);
 
-      console.log(response);
-      if (response.data.Result.user.role === "seller") {
-        navigate("/sellerDashboard");
-      } else if (response.data.Result.user.role === "farmer") {
-        navigate("/farmerDashboard");
-      } else if (response.data.Result.user.role === "admin") {
-        navigate("/adminDashboard");
+      switch (userData.role) {
+        case "seller":
+          navigate("/sellerDashboard");
+          break;
+        case "farmer":
+          navigate("/farmerDashboard");
+          break;
+        case "admin":
+          navigate("/adminDashboard");
+          break;
       }
     } catch (error) {
-      if (error.response?.data?.ErrorMessage?.[0]?.message) {
-        setError(error.response.data.ErrorMessage[0].message);
-      } else {
-        setError("Login failed. Please check your credentials.");
-      }
+      console.log(error);
+      setError(
+        error.response?.data?.ErrorMessage?.[0]?.message ||
+          "Login failed. Please check your credentials."
+      );
     } finally {
       setLoading(false);
     }
   };
+
   return (
     <div className="flex justify-around w-screen h-screen items-center  ">
       <div className="flex flex-col justify-center items-center  flex-1">

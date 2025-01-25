@@ -1,6 +1,7 @@
 import React from "react";
-import Sidebar from '../components/Sidebar';
-import Topbar from '../components/Topbar';
+import Sidebar from "../components/Sidebar";
+import Topbar from "../components/Topbar";
+import UserTable from "../components/UserTable";
 
 const AdminDashboard = () => {
   return (
@@ -8,6 +9,8 @@ const AdminDashboard = () => {
       <Sidebar />
       <div>
         <Topbar />
+
+        <UserTable />
       </div>
     </div>
   );

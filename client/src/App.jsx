@@ -15,6 +15,9 @@ import DetectDisease from "./pages/DetectDisease";
 import User from "./pages/User";
 import VerifyFarmer from "./pages/VerifyFarmer";
 import VerifySeller from "./pages/VerifySeller";
+import SellerChat from "./pages/SellerChat";
+import SellerExplore from "./pages/SellerExplore";
+import SellerNeeds from "./pages/SellerNeeds";
 
 function App() {
   return (
@@ -28,14 +31,17 @@ function App() {
         <Route path="/adminDashboard" element={<AdminDashboard />} />
         <Route path="/add" element={<Add />} />
         <Route path="/detectDisease" element={<DetectDisease />} />
-        <Route path="/explore" element={<Explore/>} />
-        <Route path="/chat" element={<Chat/>} />
+        <Route path="/explore" element={<Explore />} />
+        <Route path="/chat" element={<Chat />} />
         <Route path="/community" element={<Community />} />
         <Route path="/explore" element={<Explore />} />
         <Route path="/recommandations" element={<Recommandation />} />
-        <Route path="/user" element={<User/>} />
+        <Route path="/user" element={<User />} />
         <Route path="/verifyFarmer" element={<VerifyFarmer />} />
         <Route path="/verifySeller" element={<VerifySeller />} />
+        <Route path="/sellerChat" element={<SellerChat />} />
+        <Route path="/exploreProducts" element={<SellerExplore />} />
+        <Route path="/addNeeds" element={<SellerNeeds />} />
       </Routes>
     </BrowserRouter>
   );
