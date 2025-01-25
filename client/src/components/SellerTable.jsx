@@ -1,21 +1,30 @@
 import React, { useState, useEffect } from "react";
 import { Store, X, Check, X as XIcon } from "lucide-react";
+import axios from "axios";
 
 const SellerTable = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [dialogAction, setDialogAction] = useState(null);
   const [toast, setToast] = useState(null);
-  const [sellers] = useState([
-    {
-      id: 1,
-      shopName: "Agro Solutions",
-      ownerName: "Robert Fox",
-      email: "robert@gmail.com",
-      location: "Delhi, India",
-      contact: "+91 98765 43210",
-      panImage: "/api/placeholder/400/300",
-    },
-  ]);
+  const [sellers, setSelllers] = useState([]);
+
+  const baseUrl = import.meta.env.VITE_BASE_URL;
+  const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    const fetchAllSellers = async () => {
+      const response = await axios.get(`${baseUrl}/api/sellers`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "69420",
+        },
+      });
+
+      setSelllers(response?.data?.Result?.unverifiedSellers);
+      console.log(response);
+    };
+    fetchAllSellers();
+  }, []);
 
   useEffect(() => {
     if (toast) {
