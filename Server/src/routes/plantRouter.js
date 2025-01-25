@@ -1,5 +1,5 @@
 import express from "express";
-import { authMiddleware } from "../middlewares/authMiddleware.js";
+import { authenticateToken } from "../middlewares/authMiddleware.js";
 import upload from "../middlewares/multerConfig.js";
 import {
   addPlant,
@@ -7,19 +7,26 @@ import {
   deletePlant,
   getFarmerPlants,
   getPlantDetails,
+  getAllPlants,
 } from "../controllers/plantController.js";
 
 const plantRouter = express.Router();
 
-plantRouter.post("/add", authMiddleware, upload.array("images", 5), addPlant);
+plantRouter.post(
+  "/add",
+  authenticateToken,
+  upload.array("images", 5),
+  addPlant
+);
 plantRouter.put(
   "/:plantId",
-  authMiddleware,
+  authenticateToken,
   upload.array("images", 5),
   updatePlant
 );
-plantRouter.delete("/:plantId", authMiddleware, deletePlant);
-plantRouter.get("/farmer-plants", authMiddleware, getFarmerPlants);
+plantRouter.delete("/:plantId", authenticateToken, deletePlant);
+plantRouter.get("/farmer-plants", authenticateToken, getFarmerPlants);
+plantRouter.get("/getAllPlants", authenticateToken, getAllPlants);
 plantRouter.get("/:plantId", getPlantDetails);
 
 export default plantRouter;

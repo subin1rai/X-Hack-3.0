@@ -7,9 +7,8 @@ export const createPlantRequest = async (req, res) => {
     const { quantity, requestedPrice, deliveryLocation, deliveryDate, notes } =
       req.body;
 
-    console.log("Token payload:", req.user);
 
-    if (!req.user.sellerId) {
+    if (!req.user.sub) {
       return res.status(400).json({
         StatusCode: 400,
         IsSuccess: false,
@@ -29,7 +28,7 @@ export const createPlantRequest = async (req, res) => {
     }
 
     const request = new PlantRequest({
-      sellerId: req.user.sellerId,
+      sellerId: req.user.sub,
       plantId,
       quantity,
       requestedPrice,
@@ -67,7 +66,7 @@ export const createPlantRequest = async (req, res) => {
 
 export const sellerRequest = async (req, res) => {
   try {
-    const sellerId = req.user.sellerId;
+    const sellerId = req.user.sub;
     if (!sellerId) {
       return res.status(403).json({
         StatusCode: 403,

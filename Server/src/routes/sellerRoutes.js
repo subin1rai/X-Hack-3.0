@@ -6,13 +6,13 @@ import {
   updateSellerStatus,
 } from "../controllers/sellerController.js";
 import upload from "../middlewares/multerConfig.js";
-import { authMiddleware } from "../middlewares/authMiddleware.js";
+import { authenticateToken } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
 router.post("/register", upload.single("kycImage"), registerSeller);
 router.post("/login", login);
-router.get("/sellers", authMiddleware, getAllSellers);
-router.patch("/update-status/:sellerId", authMiddleware, updateSellerStatus);
+router.get("/sellers", authenticateToken, getAllSellers);
+router.patch("/update-status/:sellerId", authenticateToken, updateSellerStatus);
 
 export default router;

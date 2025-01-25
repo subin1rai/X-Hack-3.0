@@ -1,9 +1,10 @@
-import Seller from "../models/sellerModel.js";
+import Seller from "../models/SellerModel.js";
 import Farmer from "../models/FarmerModel.js";
 import bcrypt from "bcrypt";
 import cloudinary from "../config/coludinary.js";
 import config from "../config/config.js";
 import jwt from "jsonwebtoken";
+import { generateAccessToken } from "../middlewares/authMiddleware.js";
 
 export const registerSeller = async (req, res) => {
   const { name, email, password, kycImage, businessName, phone, address } =
@@ -95,11 +96,7 @@ export const login = async (req, res) => {
 
     const seller = await Seller.findOne({ email });
     if (seller && (await bcrypt.compare(password, seller.password))) {
-      const token = jwt.sign(
-        { id: seller._id, role: "seller", sellerId: seller._id },
-        config.jwtSecret,
-        { expiresIn: "24h" }
-      );
+      const token = generateAccessToken(seller._id);
 
       return res.status(200).json({
         StatusCode: 200,
@@ -187,7 +184,7 @@ export const getAllSellers = async (req, res) => {
 
 export const updateSellerStatus = async (req, res) => {
   try {
-    const seller = await Seller.findById(req.params.sellerId);
+    const seller = await Seller.findById(req.params.sub);
     if (!seller) {
       return res.status(404).json({
         StatusCode: 404,

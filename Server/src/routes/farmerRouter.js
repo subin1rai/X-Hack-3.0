@@ -6,16 +6,16 @@ import {
   updateFarmerStatus,
 } from "../controllers/farmerController.js";
 import upload from "../middlewares/multerConfig.js";
-import { authMiddleware } from "../middlewares/authMiddleware.js";
+import { authenticateToken } from "../middlewares/authMiddleware.js";
 
 const farmerRouter = express.Router();
 
 farmerRouter.post("/register", upload.single("licenseImage"), registerFarmer);
 farmerRouter.post("/login", loginFarmer);
-farmerRouter.get("/farmers", authMiddleware, getAllFarmers);
+farmerRouter.get("/farmers", authenticateToken, getAllFarmers);
 farmerRouter.patch(
   "/update-status/:farmerId",
-  authMiddleware,
+  authenticateToken,
   updateFarmerStatus
 );
 

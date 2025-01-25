@@ -1,5 +1,5 @@
 import express from "express";
-import { authMiddleware, sellerOnly } from "../middlewares/authMiddleware.js";
+import { authenticateToken, isSeller } from "../middlewares/authMiddleware.js";
 import {
   createPlantRequest,
   sellerRequest,
@@ -9,14 +9,14 @@ const plantRequestRouter = express.Router();
 
 plantRequestRouter.post(
   "/create/:plantId",
-  authMiddleware,
-  sellerOnly,
+  authenticateToken,
+  isSeller,
   createPlantRequest
 );
 plantRequestRouter.get(
   "/seller-requests",
-  authMiddleware,
-  sellerOnly,
+  authenticateToken,
+  isSeller,
   sellerRequest
 );
 

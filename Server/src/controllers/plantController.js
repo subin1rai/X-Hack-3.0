@@ -3,7 +3,7 @@ import cloudinary from "cloudinary";
 
 export const addPlant = async (req, res) => {
   try {
-    const farmerId = req.user.id;
+    const farmerId = req.user.sub;
     let {
       name,
       quantity,
@@ -89,7 +89,7 @@ export const updatePlant = async (req, res) => {
     }
 
     const plant = await Plant.findOneAndUpdate(
-      { _id: plantId, farmerId: req.user.id },
+      { _id: plantId, farmerId: req.user.sub },
       updates,
       { new: true, runValidators: true }
     );
@@ -128,7 +128,7 @@ export const deletePlant = async (req, res) => {
     const { plantId } = req.params;
     const plant = await Plant.findOneAndDelete({
       _id: plantId,
-      farmerId: req.user.id,
+      farmerId: req.user.sub,
     });
 
     if (!plant) {
@@ -159,7 +159,7 @@ export const deletePlant = async (req, res) => {
 
 export const getFarmerPlants = async (req, res) => {
   try {
-    const plants = await Plant.find({ id: req.user.id });
+    const plants = await Plant.find({ id: req.user.sub });
 
     res.json({
       StatusCode: 200,
@@ -186,8 +186,8 @@ export const getPlantDetails = async (req, res) => {
     const plant = await Plant.findById(plantId);
 
     if (!plant) {
-      return res.status(404).json({
-        StatusCode: 404,
+      return res.status(400).json({
+        StatusCode: 400,
         IsSuccess: false,
         ErrorMessage: "Plant not found",
         Result: null,
@@ -208,6 +208,29 @@ export const getPlantDetails = async (req, res) => {
       StatusCode: 500,
       IsSuccess: false,
       ErrorMessage: "Error fetching plant details",
+      Result: null,
+    });
+  }
+};
+
+export const getAllPlants = async (req, res) => {
+  try {
+    const plants = await Plant.find({}); 
+
+    res.json({
+      StatusCode: 200,
+      IsSuccess: true,
+      ErrorMessage: null,
+      Result: {
+        message: "All plants fetched successfully",
+        plants,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      StatusCode: 500,
+      IsSuccess: false,
+      ErrorMessage: "Error fetching all plants x",
       Result: null,
     });
   }

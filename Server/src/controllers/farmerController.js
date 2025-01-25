@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import cloudinary from "cloudinary";
 import jwt from "jsonwebtoken";
 import config from "../config/config.js";
+import { generateAccessToken } from "../middlewares/authMiddleware.js";
 
 export const registerFarmer = async (req, res) => {
   const {
@@ -119,16 +120,7 @@ export const loginFarmer = async (req, res) => {
       });
     }
 
-    const token = jwt.sign(
-      {
-        farmerId: farmer._id,
-        email: farmer.email,
-        type: "farmer",
-        role: "farmer",
-      },
-      config.jwtSecret,
-      { expiresIn: "24h" }
-    );
+      const token = generateAccessToken(farmer._id);
 
     res.status(200).json({
       StatusCode: 200,

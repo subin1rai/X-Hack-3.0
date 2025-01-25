@@ -1,5 +1,5 @@
 import express from "express";
-import { authMiddleware, farmerOnly } from "../middlewares/authMiddleware.js";
+import { authenticateToken, isFarmer } from "../middlewares/authMiddleware.js";
 import upload from "../middlewares/multerConfig.js";
 import {
   createBlog,
@@ -12,13 +12,13 @@ const blogRouter = express.Router();
 
 blogRouter.post(
   "/create",
-  authMiddleware,
-  farmerOnly,
+  authenticateToken,
+  isFarmer,
   upload.array("images", 5),
   createBlog
 );
-blogRouter.get("/", authMiddleware, farmerOnly, getAllBlogs);
-blogRouter.get("/:blogId", authMiddleware, farmerOnly, getBlogById);
-blogRouter.post("/:blogId/comments", authMiddleware, farmerOnly, addComment);
+blogRouter.get("/", authenticateToken, isFarmer, getAllBlogs);
+blogRouter.get("/:blogId", authenticateToken, isFarmer, getBlogById);
+blogRouter.post("/:blogId/comments", authenticateToken, isFarmer, addComment);
 
 export default blogRouter;

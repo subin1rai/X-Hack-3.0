@@ -121,7 +121,7 @@ export const addComment = async (req, res) => {
       });
     }
 
-    blog.comments.push({ author: req.user.id, content });
+    blog.comments.push({ author: req.user.sub, content });
     await blog.save();
 
     res.status(201).json({
