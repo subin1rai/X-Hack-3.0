@@ -11,10 +11,8 @@ export const registerFarmer = async (req, res) => {
     password,
     phone,
     address,
-    farmSize,
     farmName,
     agriculturalLicenseNumber,
-    primaryCrops,
     licenseImage,
   } = req.body;
 
@@ -47,10 +45,8 @@ export const registerFarmer = async (req, res) => {
       password: hashedPassword,
       phone,
       address,
-      farmSize,
       farmName,
       agriculturalLicenseNumber,
-      primaryCrops,
       licenseImage: uploadedImageUrl,
       isVerified: false,
       status: "pending",

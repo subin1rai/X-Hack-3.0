@@ -53,7 +53,10 @@ export const addPlant = async (req, res) => {
       StatusCode: 201,
       IsSuccess: true,
       ErrorMessage: null,
-      Result: plant,
+      Result: {
+        message: "Plant added successfully",
+        plant,
+      },
     });
   } catch (error) {
     console.error("Error adding plant:", error);
@@ -69,11 +72,26 @@ export const addPlant = async (req, res) => {
 export const updatePlant = async (req, res) => {
   try {
     const { plantId } = req.params;
-    const updates = req.body;
+    let updates = { ...req.body };
+
+    if (updates.shelfLife && typeof updates.shelfLife === "string") {
+      const match = updates.shelfLife.match(/\d+/);
+      if (match) {
+        updates.shelfLife = parseInt(match[0], 10);
+      } else {
+        return res.status(400).json({
+          StatusCode: 400,
+          IsSuccess: false,
+          ErrorMessage: "Invalid format for shelf life",
+          Result: null,
+        });
+      }
+    }
+
     const plant = await Plant.findOneAndUpdate(
       { _id: plantId, farmerId: req.user.id },
       updates,
-      { new: true }
+      { new: true, runValidators: true }
     );
 
     if (!plant) {
@@ -89,9 +107,13 @@ export const updatePlant = async (req, res) => {
       StatusCode: 200,
       IsSuccess: true,
       ErrorMessage: null,
-      Result: plant,
+      Result: {
+        message: "Plant updated successfully",
+        plant,
+      },
     });
   } catch (error) {
+    console.error("Error updating plant:", error);
     res.status(500).json({
       StatusCode: 500,
       IsSuccess: false,
@@ -122,9 +144,10 @@ export const deletePlant = async (req, res) => {
       StatusCode: 200,
       IsSuccess: true,
       ErrorMessage: null,
-      Result: { message: "Plant deleted successfully" },
+      Result: { message: "Plant deleted successfully", plantId: plantId },
     });
   } catch (error) {
+    console.log("Error deleting plant:", error);
     res.status(500).json({
       StatusCode: 500,
       IsSuccess: false,
@@ -141,7 +164,10 @@ export const getFarmerPlants = async (req, res) => {
       StatusCode: 200,
       IsSuccess: true,
       ErrorMessage: null,
-      Result: plants,
+      Result: {
+        message: "Plants fetched successfully",
+        plants,
+      },
     });
   } catch (error) {
     res.status(500).json({
@@ -171,7 +197,10 @@ export const getPlantDetails = async (req, res) => {
       StatusCode: 200,
       IsSuccess: true,
       ErrorMessage: null,
-      Result: plant,
+      Result: {
+        message: "Plant details fetched successfully",
+        plant,
+      },
     });
   } catch (error) {
     res.status(500).json({

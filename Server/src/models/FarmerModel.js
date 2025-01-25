@@ -28,10 +28,7 @@ const farmerSchema = new mongoose.Schema(
       type: String,
       required: [true, "Address is required"],
     },
-    farmSize: {
-      type: Number,
-      required: [true, "Farm size in acres is required"],
-    },
+
     farmName: {
       type: String,
       required: [true, "Farm name is required"],
@@ -41,11 +38,7 @@ const farmerSchema = new mongoose.Schema(
       required: [true, "Agricultural license number is required"],
       unique: [true, "This license number is already registered"],
     },
-    primaryCrops: {
-      type: [String],
-      required: [true, "At least one primary crop is required"],
-      validate: [arrayLimit, "Specify at least one primary crop"],
-    },
+
     licenseImage: {
       type: String,
       required: [true, "Agricultural license image is required"],
@@ -69,10 +62,6 @@ const farmerSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
-
-function arrayLimit(val) {
-  return val.length > 0;
-}
 
 const Farmer = mongoose.model("Farmer", farmerSchema);
 export default Farmer;
