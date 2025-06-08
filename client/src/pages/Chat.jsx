@@ -15,6 +15,11 @@ const Chat = () => {
     { id: 3, name: "Conversation 3" },
   ];
 
+  const conversationd = [
+    { id: 1, name: "Conversation 1" },
+    { id: 2, name: "Conversation 2" },
+    { id: 3, name: "Conversation 3" },
+  ];
   const [isActive, setIsActive] = useState(true);
   return (
     <div className="flex gap-1 bg-gray-50">
