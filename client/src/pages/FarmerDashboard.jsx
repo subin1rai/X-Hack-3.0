@@ -8,6 +8,7 @@ const FarmerDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [farmerData, setFarmerData] = useState(null);
   const baseUrl = import.meta.env.VITE_BASE_URL;
+  // const baseUrl = import.meta.env.VITE_BASE_URL;
 
   useEffect(() => {
       const fetchWeather = async () => {
